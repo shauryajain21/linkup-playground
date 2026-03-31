@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linkup Labs — Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#FFF;--bg2:#F7F7F7;--bg3:#F0F0F0;
+            --t1:#1A1A1A;--t2:#555;--t3:#8C8C8C;--t4:#B0B0B0;
+            --acc:#0052CC;--acc2:#003D99;--acc-bg:#E8F0FE;
+            --brd:#E5E5E5;--brd2:#D0D0D0;
+            --ok:#059669;--err:#DC2626;
+            --f:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+            --m:'JetBrains Mono','SF Mono',monospace;
+        }
+        body{font-family:var(--f);background:var(--bg2);color:var(--t1);line-height:1.5;-webkit-font-smoothing:antialiased}
+
+        .nav{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;border-bottom:1px solid var(--brd);background:var(--bg);position:relative}
+        .nav::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--acc)}
+        .nav-l{display:flex;align-items:center;gap:12px}
+        .nav-logo svg{height:22px;width:auto;display:block}
+        .nav-sep{width:1px;height:20px;background:var(--brd)}
+        .nav-t{font-size:14px;font-weight:500;color:var(--t2)}
+        .nav-tag{font-family:var(--m);font-size:9px;font-weight:500;color:var(--t3);background:var(--bg3);border:1px solid var(--brd);padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.8px}
+
+        .container{max-width:720px;margin:40px auto;padding:0 24px}
+
+        h1{font-size:28px;font-weight:700;letter-spacing:-.8px;margin-bottom:8px}
+        .sub{font-size:14px;color:var(--t2);margin-bottom:32px}
+
+        .card{background:var(--bg);border:1px solid var(--brd);border-radius:12px;padding:28px;margin-bottom:20px}
+        .card-title{font-family:var(--m);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:var(--t3);margin-bottom:16px}
+
+        .fg{margin-bottom:18px}
+        .fg:last-child{margin-bottom:0}
+        .fl{display:block;font-size:13px;font-weight:600;color:var(--t1);margin-bottom:6px}
+        .fh{font-weight:400;color:var(--t3);font-size:12px}
+
+        input[type="text"],input[type="url"],textarea{
+            font-family:var(--f);font-size:14px;padding:10px 14px;
+            border:1px solid var(--brd);border-radius:8px;width:100%;
+            outline:none;transition:all .15s;background:var(--bg);color:var(--t1);
+        }
+        input:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(0,82,204,.06)}
+        textarea{resize:vertical;min-height:60px;line-height:1.5}
+
+        .query-list{display:flex;flex-direction:column;gap:10px}
+        .query-item{display:flex;gap:8px;align-items:start}
+        .query-item input{flex:1}
+        .query-item select{
+            font-family:var(--f);font-size:12px;padding:10px 8px;
+            border:1px solid var(--brd);border-radius:8px;background:var(--bg);
+            color:var(--t1);outline:none;width:120px;cursor:pointer;
+        }
+        .query-item select:focus{border-color:var(--acc)}
+        .remove-btn{
+            font-size:18px;color:var(--t4);background:none;border:none;
+            cursor:pointer;padding:8px 4px;transition:color .1s;flex-shrink:0;
+        }
+        .remove-btn:hover{color:var(--err)}
+
+        .add-btn{
+            font-family:var(--m);font-size:12px;color:var(--acc);background:none;
+            border:1px dashed var(--brd);padding:10px;border-radius:8px;
+            cursor:pointer;width:100%;text-align:center;transition:all .12s;margin-top:10px;
+        }
+        .add-btn:hover{background:var(--acc-bg);border-color:var(--acc)}
+
+        .gen-btn{
+            font-family:var(--f);font-size:14px;font-weight:600;padding:14px 28px;
+            background:var(--acc);color:#fff;border:none;border-radius:8px;
+            cursor:pointer;width:100%;transition:all .12s;display:flex;
+            align-items:center;justify-content:center;gap:8px;
+        }
+        .gen-btn:hover{background:var(--acc2)}
+        .gen-btn .sq{width:8px;height:8px;background:#fff;border-radius:1px}
+
+        /* Output */
+        .output{display:none;margin-top:24px}
+        .output.vis{display:block;animation:up .2s ease}
+        @keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+        .link-card{
+            background:#0D0D0D;border:1px solid #2A2A2A;border-radius:12px;
+            padding:24px;color:#E0E0E0;
+        }
+        .link-label{font-family:var(--m);font-size:10px;color:#6EE7B7;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+        .link-url{
+            font-family:var(--m);font-size:13px;color:#7DD3FC;
+            word-break:break-all;line-height:1.6;margin-bottom:16px;
+            padding:14px;background:#141414;border:1px solid #2A2A2A;border-radius:8px;
+            cursor:pointer;transition:background .1s;
+        }
+        .link-url:hover{background:#1A1A1A}
+        .link-actions{display:flex;gap:10px}
+        .link-btn{
+            font-family:var(--m);font-size:11px;padding:8px 16px;border-radius:6px;
+            cursor:pointer;transition:all .12s;border:1px solid #333;background:#1A1A1A;color:#999;
+        }
+        .link-btn:hover{background:#222;color:#ddd;border-color:#444}
+        .link-btn.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
+        .link-btn.primary:hover{background:var(--acc2)}
+
+        .preview-frame{
+            margin-top:16px;border:1px solid #2A2A2A;border-radius:8px;
+            overflow:hidden;height:400px;display:none;
+        }
+        .preview-frame.vis{display:block}
+        .preview-frame iframe{width:100%;height:100%;border:none}
+
+        /* Logo preview */
+        .logo-preview{
+            margin-top:8px;padding:12px;background:var(--bg3);border-radius:8px;
+            display:none;align-items:center;gap:12px;
+        }
+        .logo-preview.vis{display:flex}
+        .logo-preview img{height:32px;width:auto;max-width:200px;object-fit:contain}
+        .logo-preview span{font-size:12px;color:var(--t3)}
+
+        .saved-configs{margin-top:32px}
+        .saved-title{font-family:var(--m);font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+        .saved-item{
+            display:flex;align-items:center;justify-content:space-between;
+            padding:12px 16px;background:var(--bg);border:1px solid var(--brd);
+            border-radius:8px;margin-bottom:8px;transition:all .1s;
+        }
+        .saved-item:hover{border-color:var(--brd2)}
+        .saved-name{font-size:14px;font-weight:500}
+        .saved-meta{font-family:var(--m);font-size:11px;color:var(--t3)}
+        .saved-actions{display:flex;gap:6px}
+        .saved-btn{
+            font-family:var(--m);font-size:10px;padding:4px 10px;border-radius:4px;
+            cursor:pointer;border:1px solid var(--brd);background:var(--bg);color:var(--t2);
+            transition:all .1s;
+        }
+        .saved-btn:hover{border-color:var(--brd2);color:var(--t1)}
+        .saved-btn.del:hover{color:var(--err);border-color:#FECACA}
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-l">
+        <div class="nav-logo">
+            <svg viewBox="0 0 501 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M150.677 72.711C146.612 70.249 137.909 69.542 124.794 70.608C128.992 57.678 133.757 35.391 121.323 25.153C115.886 20.674 107.471 19.044 97.616 20.559C94.676 21.014 91.575 21.745 88.388 22.732C78.867 8.282 66.295 0 53.861 0C39.429 0 26.13 9.338 16.408 26.287C5.675 45.014 0 71.963 0 104.23V104.533L3.604 106.94L3.883 106.825C30.575 95.563 67.576 85.072 100.593 79.404C101.604 87.644 102.116 95.995 102.116 104.235V104.52L105.491 107L105.761 106.913C106.255 106.752 155.159 90.882 153.979 77.589C153.856 76.202 153.183 74.227 150.677 72.711ZM148.409 78.09C148.715 81.544 133.236 91.057 111.838 98.888C115.968 92.1 119.818 84.172 122.777 76.358C135.659 75.141 144.531 75.555 147.792 77.53C148.377 77.883 148.409 78.09 148.409 78.09ZM116.668 77.011C114.084 83.377 110.951 89.633 107.54 95.246C107.334 89.514 106.913 83.882 106.296 78.462C109.922 77.897 113.407 77.41 116.668 77.011ZM117.774 29.498C125.379 35.759 125.782 51.321 118.867 71.177C114.747 71.632 110.284 72.238 105.596 72.978C103.049 55.174 98.284 39.966 91.424 27.753C94.566 26.816 96.967 26.347 98.462 26.113C106.721 24.84 113.581 26.044 117.774 29.498ZM53.857 5.622C65.056 5.622 74.888 12.002 83.092 24.592C57.703 34.541 30.319 59.409 5.78 94.8C7.431 51.481 23.03 5.622 53.861 5.622M10.193 98.241C40.75 53.934 68.202 36.443 86.074 29.585C92.449 41.238 97.205 56.552 99.843 73.933C70.521 79.032 35.638 88.498 10.193 98.241Z" fill="currentColor"/>
+                <path d="M192.855 23.754H183.758V104.356H192.855V23.754Z" fill="currentColor"/>
+                <path d="M221.066 48.047H211.969V104.351H221.066V48.047Z" fill="currentColor"/>
+                <path d="M240.18 104.356V48.052H249.048V57.611H250.66C251.888 54.922 253.981 52.485 256.935 50.296C259.89 48.107 264.246 47.012 270.008 47.012C274.227 47.012 278.01 47.896 281.349 49.659C284.688 51.427 287.354 54.033 289.351 57.491C291.348 60.945 292.347 65.204 292.347 70.27V104.356H283.25V70.962C283.25 65.36 281.848 61.288 279.045 58.756C276.242 56.223 272.463 54.959 267.704 54.959C262.253 54.959 257.819 56.727 254.402 60.253C250.985 63.785 249.277 69.043 249.277 76.027V104.351H240.18V104.356Z" fill="currentColor"/>
+                <path d="M310.769 104.356V23.754H319.866V71.191H321.478L347.271 48.047H359.936L328.734 75.455L360.861 104.356H348.311L321.478 79.829H319.866V104.356H310.769Z" fill="currentColor"/>
+                <path d="M394.252 105.391C390.18 105.391 386.438 104.507 383.026 102.744C379.609 100.98 376.925 98.351 374.964 94.857C373.008 91.366 372.028 87.125 372.028 82.133V48.047H381.125V81.441C381.125 87.043 382.522 91.115 385.33 93.647C388.128 96.18 391.912 97.449 396.671 97.449C402.044 97.449 406.459 95.686 409.913 92.154C413.367 88.623 415.093 83.365 415.093 76.38V48.052H424.19V104.36H415.322V94.802H413.71C412.478 97.49 410.371 99.927 407.375 102.112C404.38 104.301 400.005 105.395 394.248 105.395" fill="currentColor"/>
+                <path d="M443.195 127.385V48.047H452.062V57.373H453.675C455.131 54.533 457.49 52 460.756 49.774C464.017 47.548 468.566 46.435 474.401 46.435C479.238 46.435 483.672 47.603 487.703 49.948C491.734 52.289 494.958 55.609 497.372 59.905C499.791 64.206 501 69.386 501 75.451V76.948C501 82.935 499.809 88.115 497.427 92.493C495.045 96.867 491.844 100.206 487.813 102.51C483.782 104.814 479.312 105.964 474.397 105.964C470.48 105.964 467.16 105.446 464.434 104.411C461.709 103.376 459.501 102.052 457.811 100.44C456.121 98.828 454.815 97.179 453.895 95.489H452.282V127.385H443.186H443.195ZM471.983 97.907C477.814 97.907 482.559 96.048 486.205 92.324C489.851 88.605 491.674 83.402 491.674 76.724V75.689C491.674 69.011 489.851 63.812 486.205 60.089C482.559 56.365 477.818 54.505 471.983 54.505C466.147 54.505 461.484 56.37 457.76 60.089C454.037 63.812 452.177 69.011 452.177 75.689V76.724C452.177 83.402 454.037 88.605 457.76 92.324C461.484 96.048 466.225 97.907 471.983 97.907Z" fill="currentColor"/>
+                <path d="M221.922 34.261C221.922 37.329 219.435 39.812 216.371 39.812C213.307 39.812 210.819 37.325 210.819 34.261C210.819 31.197 213.307 28.71 216.371 28.71C219.435 28.71 221.922 31.197 221.922 34.261Z" fill="currentColor"/>
+            </svg>
+        </div>
+        <div class="nav-sep"></div>
+        <span class="nav-t">Labs</span>
+        <span class="nav-tag">Admin</span>
+    </div>
+</nav>
+
+<div class="container">
+    <h1>Create a demo link</h1>
+    <p class="sub">Configure a branded playground for your customer with pre-built queries.</p>
+
+    <!-- Customer Info -->
+    <div class="card">
+        <div class="card-title">Customer</div>
+        <div class="fg">
+            <label class="fl">Company Name</label>
+            <input type="text" id="companyName" placeholder="e.g. Acme Corp">
+        </div>
+        <div class="fg">
+            <label class="fl">Logo URL <span class="fh">(direct link to image)</span></label>
+            <input type="url" id="logoUrl" placeholder="https://example.com/logo.png" oninput="previewLogo()">
+            <div class="logo-preview" id="logoPreview">
+                <img id="logoImg" src="" alt="Logo preview">
+                <span>Preview</span>
+            </div>
+        </div>
+        <div class="fg">
+            <label class="fl">API Key <span class="fh">(pre-filled for the customer)</span></label>
+            <input type="text" id="apiKey" placeholder="lk-...">
+        </div>
+    </div>
+
+    <!-- Queries -->
+    <div class="card">
+        <div class="card-title">Pre-built Queries</div>
+        <p style="font-size:13px;color:var(--t2);margin-bottom:16px">These will appear as selectable options in the playground. The customer can pick one or type their own.</p>
+        <div class="query-list" id="queryList">
+            <div class="query-item">
+                <input type="text" placeholder="e.g. What is the latest funding round for Acme Corp?">
+                <select>
+                    <option value="standard">Standard</option>
+                    <option value="fast">Fast</option>
+                    <option value="deep">Deep</option>
+                </select>
+                <button class="remove-btn" onclick="removeQuery(this)">&times;</button>
+            </div>
+        </div>
+        <button class="add-btn" onclick="addQuery()">+ Add query</button>
+    </div>
+
+    <!-- Settings -->
+    <div class="card">
+        <div class="card-title">Settings</div>
+        <div class="fg">
+            <label class="fl">Default Output Type</label>
+            <select id="defaultOutput" style="font-family:var(--f);font-size:14px;padding:10px 14px;border:1px solid var(--brd);border-radius:8px;background:var(--bg);color:var(--t1);width:100%;outline:none;">
+                <option value="sourcedAnswer">sourcedAnswer</option>
+                <option value="searchResults">searchResults</option>
+                <option value="structured">structured</option>
+            </select>
+        </div>
+        <div class="fg">
+            <label class="fl">Default Depth</label>
+            <select id="defaultDepth" style="font-family:var(--f);font-size:14px;padding:10px 14px;border:1px solid var(--brd);border-radius:8px;background:var(--bg);color:var(--t1);width:100%;outline:none;">
+                <option value="standard">Standard</option>
+                <option value="fast">Fast</option>
+                <option value="deep">Deep</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Generate -->
+    <button class="gen-btn" onclick="generate()">
+        <span class="sq"></span>
+        Generate Demo Link
+    </button>
+
+    <!-- Output -->
+    <div class="output" id="output">
+        <div class="link-card">
+            <div class="link-label">Demo link</div>
+            <div class="link-url" id="linkUrl" onclick="copyLink()"></div>
+            <div class="link-actions">
+                <button class="link-btn primary" onclick="copyLink()">Copy link</button>
+                <button class="link-btn" onclick="openLink()">Open in new tab</button>
+                <button class="link-btn" onclick="togglePreview()">Preview</button>
+                <button class="link-btn" onclick="saveConfig()">Save locally</button>
+            </div>
+            <div class="preview-frame" id="previewFrame">
+                <iframe id="previewIframe"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Saved Configs -->
+    <div class="saved-configs" id="savedSection" style="display:none">
+        <div class="saved-title">Saved Configs</div>
+        <div id="savedList"></div>
+    </div>
+</div>
+
+<script>
+let generatedUrl = '';
+
+function addQuery() {
+    const list = document.getElementById('queryList');
+    const item = document.createElement('div');
+    item.className = 'query-item';
+    item.innerHTML = `
+        <input type="text" placeholder="e.g. Find the pricing page for ...">
+        <select>
+            <option value="standard">Standard</option>
+            <option value="fast">Fast</option>
+            <option value="deep">Deep</option>
+        </select>
+        <button class="remove-btn" onclick="removeQuery(this)">&times;</button>
+    `;
+    list.appendChild(item);
+}
+
+function removeQuery(btn) {
+    const list = document.getElementById('queryList');
+    if (list.children.length > 1) {
+        btn.closest('.query-item').remove();
+    }
+}
+
+function previewLogo() {
+    const url = document.getElementById('logoUrl').value.trim();
+    const preview = document.getElementById('logoPreview');
+    const img = document.getElementById('logoImg');
+    if (url) {
+        img.src = url;
+        img.onerror = () => preview.classList.remove('vis');
+        img.onload = () => preview.classList.add('vis');
+    } else {
+        preview.classList.remove('vis');
+    }
+}
+
+function getConfig() {
+    const queries = [];
+    document.querySelectorAll('.query-item').forEach(item => {
+        const q = item.querySelector('input').value.trim();
+        const d = item.querySelector('select').value;
+        if (q) queries.push({ q, depth: d });
+    });
+
+    return {
+        name: document.getElementById('companyName').value.trim(),
+        logo: document.getElementById('logoUrl').value.trim(),
+        key: document.getElementById('apiKey').value.trim(),
+        queries,
+        output: document.getElementById('defaultOutput').value,
+        depth: document.getElementById('defaultDepth').value,
+    };
+}
+
+function generate() {
+    const config = getConfig();
+    if (!config.name) { alert('Enter a company name'); return; }
+
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(config))));
+    const base = window.location.origin;
+    generatedUrl = `${base}/index.html?c=${encoded}`;
+
+    document.getElementById('linkUrl').textContent = generatedUrl;
+    document.getElementById('output').classList.add('vis');
+    document.getElementById('previewFrame').classList.remove('vis');
+}
+
+function copyLink() {
+    navigator.clipboard.writeText(generatedUrl).then(() => {
+        const el = document.getElementById('linkUrl');
+        const orig = el.textContent;
+        el.textContent = 'Copied!';
+        setTimeout(() => el.textContent = orig, 1500);
+    });
+}
+
+function openLink() {
+    if (generatedUrl) window.open(generatedUrl, '_blank');
+}
+
+function togglePreview() {
+    const frame = document.getElementById('previewFrame');
+    frame.classList.toggle('vis');
+    if (frame.classList.contains('vis')) {
+        document.getElementById('previewIframe').src = generatedUrl;
+    }
+}
+
+function saveConfig() {
+    const config = getConfig();
+    if (!config.name) return;
+
+    const saved = JSON.parse(localStorage.getItem('linkup_configs') || '[]');
+    const existing = saved.findIndex(s => s.name === config.name);
+    if (existing >= 0) saved[existing] = { ...config, url: generatedUrl, date: new Date().toISOString() };
+    else saved.push({ ...config, url: generatedUrl, date: new Date().toISOString() });
+    localStorage.setItem('linkup_configs', JSON.stringify(saved));
+    renderSaved();
+}
+
+function renderSaved() {
+    const saved = JSON.parse(localStorage.getItem('linkup_configs') || '[]');
+    const section = document.getElementById('savedSection');
+    const list = document.getElementById('savedList');
+    if (!saved.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    list.innerHTML = saved.map((s, i) => `
+        <div class="saved-item">
+            <div>
+                <div class="saved-name">${esc(s.name)}</div>
+                <div class="saved-meta">${s.queries ? s.queries.length : 0} queries &middot; ${new Date(s.date).toLocaleDateString()}</div>
+            </div>
+            <div class="saved-actions">
+                <button class="saved-btn" onclick="loadConfig(${i})">Load</button>
+                <button class="saved-btn" onclick="copySaved(${i})">Copy link</button>
+                <button class="saved-btn del" onclick="deleteSaved(${i})">Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadConfig(i) {
+    const saved = JSON.parse(localStorage.getItem('linkup_configs') || '[]');
+    const c = saved[i]; if (!c) return;
+    document.getElementById('companyName').value = c.name || '';
+    document.getElementById('logoUrl').value = c.logo || '';
+    document.getElementById('apiKey').value = c.key || '';
+    document.getElementById('defaultOutput').value = c.output || 'sourcedAnswer';
+    document.getElementById('defaultDepth').value = c.depth || 'standard';
+    previewLogo();
+
+    const list = document.getElementById('queryList');
+    list.innerHTML = '';
+    (c.queries || []).forEach(q => {
+        const item = document.createElement('div');
+        item.className = 'query-item';
+        item.innerHTML = `<input type="text" value="${esc(q.q)}"><select><option value="standard" ${q.depth==='standard'?'selected':''}>Standard</option><option value="fast" ${q.depth==='fast'?'selected':''}>Fast</option><option value="deep" ${q.depth==='deep'?'selected':''}>Deep</option></select><button class="remove-btn" onclick="removeQuery(this)">&times;</button>`;
+        list.appendChild(item);
+    });
+    if (!list.children.length) addQuery();
+
+    if (c.url) {
+        generatedUrl = c.url;
+        document.getElementById('linkUrl').textContent = c.url;
+        document.getElementById('output').classList.add('vis');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copySaved(i) {
+    const saved = JSON.parse(localStorage.getItem('linkup_configs') || '[]');
+    if (saved[i] && saved[i].url) navigator.clipboard.writeText(saved[i].url);
+}
+
+function deleteSaved(i) {
+    const saved = JSON.parse(localStorage.getItem('linkup_configs') || '[]');
+    saved.splice(i, 1);
+    localStorage.setItem('linkup_configs', JSON.stringify(saved));
+    renderSaved();
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Init
+renderSaved();
+</script>
+</body>
+</html>
