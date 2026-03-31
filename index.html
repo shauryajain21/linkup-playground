@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linkup Labs — Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#FFF;--bg2:#FAFAFA;--bg3:#F5F5F5;--bg4:#EDEDEB;
+            --dark:#1A1A1A;--dark2:#232323;
+            --t1:#1A1A1A;--t2:#555;--t3:#8C8C8C;--t4:#B0B0B0;
+            --acc:#0052CC;--acc2:#003D99;--acc-bg:#E8F0FE;
+            --brd:#E5E5E5;--brd2:#D0D0D0;--brd3:#F0F0F0;
+            --ok:#059669;--ok-bg:#ECFDF5;--err:#DC2626;--err-bg:#FEF2F2;
+            --r:8px;--r2:12px;--r3:16px;
+            --f:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+            --m:'JetBrains Mono','SF Mono','Consolas',monospace;
+        }
+        body{font-family:var(--f);background:var(--bg3);color:var(--t1);line-height:1.5;font-size:15px;overflow-x:hidden;-webkit-font-smoothing:antialiased;height:100vh;display:flex;flex-direction:column}
+
+        /* ═══ NAV ═══ */
+        .nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:48px;border-bottom:1px solid var(--brd);background:var(--bg);flex-shrink:0;position:relative}
+        .nav::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--acc)}
+        .nav-l{display:flex;align-items:center;gap:12px}
+        .nav-logo svg{height:24px;width:auto;display:block}
+        .nav-sep{width:1px;height:18px;background:var(--brd)}
+        .nav-t{font-size:13px;font-weight:500;color:var(--t2)}
+        .nav-tag{font-family:var(--m);font-size:9px;font-weight:500;color:var(--t3);background:var(--bg3);border:1px solid var(--brd);padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.8px}
+        .nav-r{display:flex;align-items:center;gap:8px}
+        .nav-kl{font-family:var(--m);font-size:10px;color:var(--t4)}
+        .nav-ki{font-family:var(--m);font-size:12px;padding:5px 10px;border:1px solid var(--brd);border-radius:5px;width:200px;outline:none;transition:all .2s;background:var(--bg);color:var(--t1)}
+        .nav-ki:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(0,82,204,.06)}
+        .nav-ki.ok{border-color:var(--ok)}
+        .nav-ks{font-family:var(--m);font-size:10px;color:var(--ok);min-width:28px}
+
+        /* ═══ MODE TABS ═══ */
+        .mode-bar{display:flex;align-items:center;gap:0;padding:0 24px;height:38px;background:var(--bg);border-bottom:1px solid var(--brd);flex-shrink:0}
+        .mode-tab{font-family:var(--f);font-size:13px;font-weight:500;padding:0 20px;height:100%;display:flex;align-items:center;color:var(--t3);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .12s}
+        .mode-tab:hover{color:var(--t1)}
+        .mode-tab.on{color:var(--t1);border-bottom-color:var(--acc)}
+
+        /* ═══ SPLIT LAYOUT ═══ */
+        .split{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden}
+
+        /* Left: Input panel */
+        .left{background:var(--bg);border-right:1px solid rgba(255,255,255,.06);overflow-y:auto;padding:24px 28px}
+        .left::-webkit-scrollbar{width:4px}
+        .left::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:4px}
+
+        /* Right: Output panel — dark terminal style */
+        .right{background:#0D0D0D;overflow-y:auto;position:relative;color:#E0E0E0}
+        .right::-webkit-scrollbar{width:4px}
+        .right::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+
+        /* ═══ PLACEHOLDER (empty output) ═══ */
+        .placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:20px;padding:40px;text-align:center}
+        .placeholder.hidden{display:none}
+        .ph-globe{width:240px;height:240px;opacity:.06;color:#fff}
+        .ph-text{font-size:14px;color:#555;max-width:280px;line-height:1.6}
+        .ph-mono{font-family:var(--m);font-size:11px;color:#3A3A3A;letter-spacing:.3px;padding:6px 14px;border:1px solid #222;border-radius:6px}
+
+        /* ═══ FORM ═══ */
+        .fg{margin-bottom:16px;flex-shrink:0}
+        .fg:last-child{margin-bottom:0}
+        .ft{font-family:var(--m);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-bottom:6px}
+        .fl{display:block;font-size:12px;font-weight:600;color:var(--t1);margin-bottom:6px}
+        .fh{font-weight:400;color:var(--t3);font-size:11px}
+        textarea,input[type="text"],input[type="url"],input[type="number"],input[type="date"]{font-family:var(--f);font-size:14px;padding:10px 12px;border:1px solid var(--brd);border-radius:var(--r);width:100%;outline:none;transition:all .15s;background:var(--bg);color:var(--t1)}
+        textarea:focus,input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(0,82,204,.06)}
+        textarea{resize:vertical;min-height:72px;line-height:1.6;font-size:14px}
+
+        /* Depth — vertical stack with mosaic art */
+        .depth-row{display:flex;flex-direction:column;gap:6px}
+        .dc{border:1.5px solid var(--brd);border-radius:var(--r2);padding:0;cursor:pointer;transition:all .12s;background:var(--bg);display:grid;grid-template-columns:1fr 80px;overflow:hidden}
+        .dc:hover{border-color:var(--brd2)}
+        .dc.on{border-color:var(--acc);background:var(--acc-bg)}
+        .dc-body{padding:10px 12px}
+        .dc-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+        .dc-nm{font-size:14px;font-weight:600}
+        .dc-pr{font-family:var(--m);font-size:10px;color:var(--t2)}
+        .dc.on .dc-pr{color:var(--acc)}
+        .dc-ds{font-size:11px;color:var(--t2);line-height:1.4}
+        .dc-tg{font-family:var(--m);font-size:8px;font-weight:500;padding:2px 5px;border-radius:3px;margin-top:6px;display:inline-block;text-transform:uppercase;letter-spacing:.4px;background:var(--bg3);color:var(--t3)}
+        .dc.on .dc-tg{background:rgba(0,82,204,.1);color:var(--acc)}
+        .dc-mosaic{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:1px;background:var(--brd3)}
+        .dc-mosaic .mc{}
+
+        /* Seg */
+        .seg{display:inline-flex;border:1px solid var(--brd);border-radius:6px;background:var(--bg3);padding:2px;gap:2px}
+        .sb{font-family:var(--m);font-size:11px;font-weight:500;padding:6px 12px;border:none;background:transparent;color:var(--t2);cursor:pointer;transition:all .12s;border-radius:5px;white-space:nowrap}
+        .sb:hover{color:var(--t1);background:rgba(255,255,255,.5)}
+        .sb.on{background:var(--bg);color:var(--t1);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+
+        /* Schema */
+        .sch-w{display:none;margin-top:10px;padding:10px;background:var(--bg3);border-radius:var(--r)}
+        .sch-w.open{display:block}
+        .sch-w textarea{font-family:var(--m);font-size:11px;min-height:120px;background:var(--bg)}
+
+        /* Advanced section — always visible */
+        .adv-section{margin-top:14px;padding-top:14px;border-top:1px solid var(--brd3)}
+        .adv-title{font-family:var(--m);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-bottom:8px}
+        .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .g2 .fg{margin-bottom:0}
+
+        /* Check */
+        .chk{display:flex;align-items:center;gap:8px}
+        .chk input[type="checkbox"]{width:15px;height:15px;accent-color:var(--acc);cursor:pointer}
+        .chk label{font-size:13px;cursor:pointer}
+        .chk .sub{font-size:11px;color:var(--t3)}
+
+        /* Run btn */
+        .run{font-family:var(--f);font-size:13px;font-weight:600;padding:11px 20px;background:var(--acc);color:#fff;border:none;border-radius:var(--r);cursor:pointer;width:100%;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:8px}
+        .run:hover{background:var(--acc2)}
+        .run:disabled{opacity:.5;cursor:not-allowed}
+        .run .sq{width:8px;height:8px;background:#fff;border-radius:1px;flex-shrink:0}
+        .run .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .run .tm{font-family:var(--m);font-size:11px;opacity:.7}
+
+        /* ═══ RESULTS ═══ */
+        .res{display:none;padding:24px}
+        .res.vis{display:block;animation:up .2s ease}
+        @keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+        .rc{background:#141414;border:1px solid #2A2A2A;border-radius:var(--r2);overflow:hidden}
+
+        /* Meta */
+        .meta{display:flex;gap:0;border-bottom:1px solid #2A2A2A;background:#111;font-size:11px}
+        .mi{padding:9px 14px;color:#777;border-right:1px solid #2A2A2A;display:flex;align-items:center;gap:5px}
+        .mi:last-child{border-right:none}
+        .mi b{font-family:var(--m);font-size:10px;font-weight:600;color:#B0B0B0}
+        .mi .dot{width:5px;height:5px;border-radius:50%;background:#4ADE80}
+
+        /* Result body */
+        .rb{padding:24px;font-family:var(--m);font-size:13px;line-height:1.7}
+
+        /* Source items (searchResults) — dark theme */
+        .r-count{font-family:var(--m);font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+        .si{border:1px solid #2A2A2A;border-left:3px solid #3B82F6;border-radius:0 var(--r) var(--r) 0;padding:14px 16px;margin-bottom:8px;transition:background .1s}
+        .si:hover{background:#1A1A1A}
+        .si-t{font-size:13px;font-weight:600;margin-bottom:2px}
+        .si-t a{color:#93C5FD;text-decoration:none}
+        .si-t a:hover{color:#60A5FA}
+        .si-u{font-family:var(--m);font-size:9px;color:#555;margin-bottom:6px;word-break:break-all}
+        .si-c{font-size:12px;color:#888;line-height:1.6}
+        .si-e{font-family:var(--m);font-size:9px;color:#60A5FA;cursor:pointer;background:none;border:none;padding:2px 0;margin-top:4px}
+
+        /* Answer — vivid colors on dark, high contrast */
+        .ans{font-family:var(--m);font-size:13px;line-height:1.85;color:#E8ECF1}
+        .ans h1{font-size:18px;font-weight:700;margin:20px 0 8px;color:#7DD3FC;letter-spacing:-.3px}
+        .ans h2{font-size:16px;font-weight:700;margin:16px 0 6px;color:#C4B5FD}
+        .ans h3{font-size:14px;font-weight:600;margin:12px 0 4px;color:#FCD34D}
+        .ans p{margin-bottom:10px;color:#D1D5DB}
+        .ans ul,.ans ol{margin:4px 0 10px 20px}
+        .ans li{margin-bottom:5px;color:#D1D5DB}
+        .ans li::marker{color:#6EE7B7}
+        .ans strong{font-weight:700;color:#FCD34D}
+        .ans em{color:#F0ABFC;font-style:italic}
+        .ans a{color:#7DD3FC;text-decoration:none}
+        .ans a:hover{text-decoration:underline;color:#BAE6FD}
+        .ans code{font-family:var(--m);font-size:12px;background:#1E2127;padding:2px 6px;border-radius:3px;color:#FCA5A5}
+        .ans pre{background:#1E2127;color:#D1D5DB;padding:14px 16px;border-radius:var(--r);overflow-x:auto;margin:10px 0;font-size:12px;line-height:1.6;border:1px solid #2C313A}
+        .ans pre code{background:none;padding:0;color:inherit}
+
+        /* Sources list — bright on dark */
+        .sf{margin-top:20px;padding-top:16px;border-top:1px solid #2A2A2A}
+        .sf-hd{font-family:var(--m);font-size:10px;color:#6EE7B7;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+        .sl{list-style:none}
+        .sl li{display:flex;align-items:baseline;gap:8px;padding:7px 0;border-bottom:1px solid #1E1E1E;font-size:12px}
+        .sl li:last-child{border-bottom:none}
+        .sl .sn{font-family:var(--m);font-size:9px;color:#6B7280;min-width:16px;flex-shrink:0}
+        .sl .sinfo{flex:1;min-width:0}
+        .sl .sname{color:#7DD3FC;font-weight:500;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+        .sl .sdom{font-family:var(--m);font-size:9px;color:#6B7280;margin-top:1px}
+        .sl a{text-decoration:none;display:block}
+        .sl a:hover .sname{color:#BAE6FD}
+
+        /* JSON */
+        .jw{position:relative;border-radius:var(--r);overflow:hidden}
+        .jw pre{background:#111;color:#D4D4D4;padding:18px 20px;overflow:auto;max-height:500px;font-family:var(--m);font-size:12px;line-height:1.6;margin:0;border:1px solid #2A2A2A;border-radius:var(--r)}
+        .json-key{color:#9CDCFE}.json-str{color:#CE9178}.json-num{color:#B5CEA8}.json-bool{color:#569CD6}.json-null{color:#569CD6}
+        .cpb{position:absolute;top:8px;right:8px;font-family:var(--m);font-size:9px;padding:4px 8px;background:rgba(255,255,255,.06);color:#666;border:1px solid #333;border-radius:4px;cursor:pointer;transition:all .1s}
+        .cpb:hover{background:rgba(255,255,255,.1);color:#999}
+
+        /* Footer */
+        .rf{padding:8px 16px;border-top:1px solid #2A2A2A;display:flex;justify-content:flex-end;background:#111}
+        .rawb{font-family:var(--m);font-size:9px;color:#555;background:none;border:1px solid #333;padding:4px 10px;border-radius:4px;cursor:pointer;transition:all .1s}
+        .rawb:hover{color:#999;border-color:#555}
+        .rawp{display:none;padding:0 24px 20px}
+        .rawp.open{display:block}
+
+        /* Error — dark variant */
+        .errb{border:1px solid #7F1D1D;border-radius:var(--r2);padding:16px 20px;background:#1C0D0D;color:#FCA5A5;font-size:12px;margin:24px}
+        .errb b{font-weight:600;display:block;margin-bottom:2px;color:#F87171}
+
+        /* Fetch content */
+        .fc{max-height:none;overflow:visible}
+
+        /* ═══ RESPONSIVE ═══ */
+        @media(max-width:900px){
+            .split{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+            .left{border-right:none;border-bottom:1px solid var(--brd);overflow:visible;max-height:none;padding:20px 16px}
+            .right{min-height:400px}
+        }
+        @media(max-width:600px){
+            .nav{padding:0 12px;height:48px}
+            .nav-ki{width:140px}
+            .mode-bar{padding:0 12px}
+            .left{padding:16px}
+            .dc{grid-template-columns:1fr}
+            .g2{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <div class="nav-l">
+        <div class="nav-logo">
+            <svg viewBox="0 0 501 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M150.677 72.711C146.612 70.249 137.909 69.542 124.794 70.608C128.992 57.678 133.757 35.391 121.323 25.153C115.886 20.674 107.471 19.044 97.616 20.559C94.676 21.014 91.575 21.745 88.388 22.732C78.867 8.282 66.295 0 53.861 0C39.429 0 26.13 9.338 16.408 26.287C5.675 45.014 0 71.963 0 104.23V104.533L3.604 106.94L3.883 106.825C30.575 95.563 67.576 85.072 100.593 79.404C101.604 87.644 102.116 95.995 102.116 104.235V104.52L105.491 107L105.761 106.913C106.255 106.752 155.159 90.882 153.979 77.589C153.856 76.202 153.183 74.227 150.677 72.711ZM148.409 78.09C148.715 81.544 133.236 91.057 111.838 98.888C115.968 92.1 119.818 84.172 122.777 76.358C135.659 75.141 144.531 75.555 147.792 77.53C148.377 77.883 148.409 78.09 148.409 78.09ZM116.668 77.011C114.084 83.377 110.951 89.633 107.54 95.246C107.334 89.514 106.913 83.882 106.296 78.462C109.922 77.897 113.407 77.41 116.668 77.011ZM117.774 29.498C125.379 35.759 125.782 51.321 118.867 71.177C114.747 71.632 110.284 72.238 105.596 72.978C103.049 55.174 98.284 39.966 91.424 27.753C94.566 26.816 96.967 26.347 98.462 26.113C106.721 24.84 113.581 26.044 117.774 29.498ZM53.857 5.622C65.056 5.622 74.888 12.002 83.092 24.592C57.703 34.541 30.319 59.409 5.78 94.8C7.431 51.481 23.03 5.622 53.861 5.622M10.193 98.241C40.75 53.934 68.202 36.443 86.074 29.585C92.449 41.238 97.205 56.552 99.843 73.933C70.521 79.032 35.638 88.498 10.193 98.241Z" fill="currentColor"/>
+                <path d="M192.855 23.754H183.758V104.356H192.855V23.754Z" fill="currentColor"/>
+                <path d="M221.066 48.047H211.969V104.351H221.066V48.047Z" fill="currentColor"/>
+                <path d="M240.18 104.356V48.052H249.048V57.611H250.66C251.888 54.922 253.981 52.485 256.935 50.296C259.89 48.107 264.246 47.012 270.008 47.012C274.227 47.012 278.01 47.896 281.349 49.659C284.688 51.427 287.354 54.033 289.351 57.491C291.348 60.945 292.347 65.204 292.347 70.27V104.356H283.25V70.962C283.25 65.36 281.848 61.288 279.045 58.756C276.242 56.223 272.463 54.959 267.704 54.959C262.253 54.959 257.819 56.727 254.402 60.253C250.985 63.785 249.277 69.043 249.277 76.027V104.351H240.18V104.356Z" fill="currentColor"/>
+                <path d="M310.769 104.356V23.754H319.866V71.191H321.478L347.271 48.047H359.936L328.734 75.455L360.861 104.356H348.311L321.478 79.829H319.866V104.356H310.769Z" fill="currentColor"/>
+                <path d="M394.252 105.391C390.18 105.391 386.438 104.507 383.026 102.744C379.609 100.98 376.925 98.351 374.964 94.857C373.008 91.366 372.028 87.125 372.028 82.133V48.047H381.125V81.441C381.125 87.043 382.522 91.115 385.33 93.647C388.128 96.18 391.912 97.449 396.671 97.449C402.044 97.449 406.459 95.686 409.913 92.154C413.367 88.623 415.093 83.365 415.093 76.38V48.052H424.19V104.36H415.322V94.802H413.71C412.478 97.49 410.371 99.927 407.375 102.112C404.38 104.301 400.005 105.395 394.248 105.395" fill="currentColor"/>
+                <path d="M443.195 127.385V48.047H452.062V57.373H453.675C455.131 54.533 457.49 52 460.756 49.774C464.017 47.548 468.566 46.435 474.401 46.435C479.238 46.435 483.672 47.603 487.703 49.948C491.734 52.289 494.958 55.609 497.372 59.905C499.791 64.206 501 69.386 501 75.451V76.948C501 82.935 499.809 88.115 497.427 92.493C495.045 96.867 491.844 100.206 487.813 102.51C483.782 104.814 479.312 105.964 474.397 105.964C470.48 105.964 467.16 105.446 464.434 104.411C461.709 103.376 459.501 102.052 457.811 100.44C456.121 98.828 454.815 97.179 453.895 95.489H452.282V127.385H443.186H443.195ZM471.983 97.907C477.814 97.907 482.559 96.048 486.205 92.324C489.851 88.605 491.674 83.402 491.674 76.724V75.689C491.674 69.011 489.851 63.812 486.205 60.089C482.559 56.365 477.818 54.505 471.983 54.505C466.147 54.505 461.484 56.37 457.76 60.089C454.037 63.812 452.177 69.011 452.177 75.689V76.724C452.177 83.402 454.037 88.605 457.76 92.324C461.484 96.048 466.225 97.907 471.983 97.907Z" fill="currentColor"/>
+                <path d="M221.922 34.261C221.922 37.329 219.435 39.812 216.371 39.812C213.307 39.812 210.819 37.325 210.819 34.261C210.819 31.197 213.307 28.71 216.371 28.71C219.435 28.71 221.922 31.197 221.922 34.261Z" fill="currentColor"/>
+            </svg>
+        </div>
+        <div class="nav-sep"></div>
+        <span class="nav-t">Labs</span>
+        <span class="nav-tag">Demo</span>
+    </div>
+    <div class="nav-r">
+        <span class="nav-kl">API Key</span>
+        <input type="password" class="nav-ki" id="apiKeyInput" placeholder="lk-..." autocomplete="off" spellcheck="false">
+        <span class="nav-ks" id="apiKeyHint"></span>
+    </div>
+</nav>
+
+<!-- MODE TABS -->
+<div class="mode-bar">
+    <button class="mode-tab on" data-m="search" onclick="sw('search')">Search</button>
+    <button class="mode-tab" data-m="fetch" onclick="sw('fetch')">Fetch</button>
+</div>
+
+<!-- SPLIT LAYOUT -->
+<div class="split">
+
+    <!-- LEFT: Input -->
+    <div class="left">
+        <!-- SEARCH FORM -->
+        <div id="f-search">
+            <div class="fg">
+                <div class="ft">Query</div>
+                <textarea id="sQ" placeholder="e.g. Find Datadog's current pricing page. Scrape it. Extract plan names, prices, and features."></textarea>
+            </div>
+            <div class="fg">
+                <div class="ft">Depth</div>
+                <div class="depth-row" id="dCards">
+                    <div class="dc" data-v="fast" onclick="sD('fast')">
+                        <div class="dc-body">
+                            <div class="dc-hd"><span class="dc-nm">Fast</span><span class="dc-pr">$0.001</span></div>
+                            <div class="dc-ds">Sub-second keyword search. Best for simple factual lookups.</div>
+                            <span class="dc-tg">&lt;1s &middot; synchronous</span>
+                        </div>
+                        <div class="dc-mosaic" id="dm1"></div>
+                    </div>
+                    <div class="dc on" data-v="standard" onclick="sD('standard')">
+                        <div class="dc-body">
+                            <div class="dc-hd"><span class="dc-nm">Standard</span><span class="dc-pr">$0.005</span></div>
+                            <div class="dc-ds">Parallel searches. Scrape one provided URL.</div>
+                            <span class="dc-tg">1-3s &middot; synchronous</span>
+                        </div>
+                        <div class="dc-mosaic" id="dm2"></div>
+                    </div>
+                    <div class="dc" data-v="deep" onclick="sD('deep')">
+                        <div class="dc-body">
+                            <div class="dc-hd"><span class="dc-nm">Deep</span><span class="dc-pr">$0.05</span></div>
+                            <div class="dc-ds">Up to 10 iterative passes. Chain &amp; scrape multiple URLs.</div>
+                            <span class="dc-tg">5-30s &middot; agentic</span>
+                        </div>
+                        <div class="dc-mosaic" id="dm3"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="fg">
+                <div class="ft">Output type</div>
+                <div class="seg" id="oTog">
+                    <button class="sb on" data-v="searchResults" onclick="sO(this)">searchResults</button>
+                    <button class="sb" data-v="sourcedAnswer" onclick="sO(this)">sourcedAnswer</button>
+                    <button class="sb" data-v="structured" onclick="sO(this)">structured</button>
+                </div>
+                <div class="sch-w" id="schEd">
+                    <div class="ft" style="margin-top:0">JSON Schema</div>
+                    <textarea id="schIn">{
+  "type": "object",
+  "properties": {
+    "company_name": { "type": "string" },
+    "pricing_plans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "price": { "type": "string" },
+          "features": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}</textarea>
+                </div>
+            </div>
+            <div class="adv-section">
+                <div class="adv-title">Filters</div>
+                <div class="g2">
+                    <div class="fg"><label class="fl">From Date</label><input type="date" id="fDate"></div>
+                    <div class="fg"><label class="fl">To Date</label><input type="date" id="tDate"></div>
+                    <div class="fg"><label class="fl">Include Domains <span class="fh">(comma-sep)</span></label><input type="text" id="incD" placeholder="sec.gov, tesla.com"></div>
+                    <div class="fg"><label class="fl">Exclude Domains <span class="fh">(comma-sep)</span></label><input type="text" id="excD" placeholder="reddit.com"></div>
+                </div>
+            </div>
+            <div style="margin-top:16px">
+                <button class="run" id="sBtn" onclick="doSearch()"><span class="sq"></span>Run Search</button>
+            </div>
+        </div>
+
+        <!-- FETCH FORM -->
+        <div id="f-fetch" style="display:none">
+            <div class="fg">
+                <div class="ft">URL</div>
+                <input type="url" id="fUrl" placeholder="https://example.com/pricing">
+            </div>
+            <div class="fg">
+                <div class="chk">
+                    <input type="checkbox" id="rJs" checked>
+                    <label for="rJs">Render JavaScript</label>
+                    <span class="sub">Recommended</span>
+                </div>
+            </div>
+            <button class="run" id="fBtn" onclick="doFetch()"><span class="sq"></span>Fetch Page</button>
+        </div>
+    </div>
+
+    <!-- RIGHT: Output -->
+    <div class="right">
+        <!-- Placeholder -->
+        <div class="placeholder" id="ph">
+            <svg class="ph-globe" viewBox="0 0 400 400" fill="none">
+                <circle cx="200" cy="200" r="185" stroke="currentColor" stroke-width=".8"/>
+                <circle cx="200" cy="200" r="170" stroke="currentColor" stroke-width=".4"/>
+                <ellipse cx="200" cy="200" rx="110" ry="185" stroke="currentColor" stroke-width=".6"/>
+                <ellipse cx="200" cy="200" rx="60" ry="185" stroke="currentColor" stroke-width=".4"/>
+                <ellipse cx="200" cy="200" rx="150" ry="185" stroke="currentColor" stroke-width=".3"/>
+                <line x1="15" y1="100" x2="385" y2="100" stroke="currentColor" stroke-width=".3"/>
+                <line x1="15" y1="160" x2="385" y2="160" stroke="currentColor" stroke-width=".4"/>
+                <line x1="15" y1="200" x2="385" y2="200" stroke="currentColor" stroke-width=".6"/>
+                <line x1="15" y1="240" x2="385" y2="240" stroke="currentColor" stroke-width=".4"/>
+                <line x1="15" y1="300" x2="385" y2="300" stroke="currentColor" stroke-width=".3"/>
+                <ellipse cx="200" cy="200" rx="185" ry="60" stroke="currentColor" stroke-width=".4"/>
+            </svg>
+            <div class="ph-text">Enter a query and run a search to see results here</div>
+            <div class="ph-mono">linkup.so/v1/search</div>
+        </div>
+
+        <!-- Results -->
+        <div class="res" id="sRes"></div>
+        <div class="res" id="fRes"></div>
+    </div>
+</div>
+
+<script>
+let cDepth='standard',cOut='searchResults';
+
+// API KEY
+const kI=document.getElementById('apiKeyInput'),kH=document.getElementById('apiKeyHint');
+const sk=localStorage.getItem('linkup_api_key');
+if(sk){kI.value=sk;kH.textContent='saved';}
+kI.addEventListener('input',()=>{const k=kI.value.trim();if(k){localStorage.setItem('linkup_api_key',k);kH.textContent='saved';kI.classList.add('ok');setTimeout(()=>kI.classList.remove('ok'),1500);}else{localStorage.removeItem('linkup_api_key');kH.textContent='';}});
+function gK(){return kI.value.trim();}
+
+// MODE SWITCH
+function sw(m){
+    document.querySelectorAll('.mode-tab').forEach(t=>t.classList.toggle('on',t.dataset.m===m));
+    document.getElementById('f-search').style.display=m==='search'?'block':'none';
+    document.getElementById('f-fetch').style.display=m==='fetch'?'block':'none';
+    // Update placeholder text
+    const ph=document.getElementById('ph');
+    if(m==='search'){
+        ph.querySelector('.ph-text').textContent='Enter a query and run a search to see results here';
+        ph.querySelector('.ph-mono').textContent='linkup.so/v1/search';
+    }else{
+        ph.querySelector('.ph-text').textContent='Enter a URL and fetch it to see the extracted content here';
+        ph.querySelector('.ph-mono').textContent='linkup.so/v1/fetch';
+    }
+    // Show placeholder, hide results
+    ph.classList.remove('hidden');
+    document.getElementById('sRes').classList.remove('vis');
+    document.getElementById('fRes').classList.remove('vis');
+}
+
+// DEPTH & OUTPUT
+function sD(v){cDepth=v;document.querySelectorAll('.dc').forEach(c=>c.classList.toggle('on',c.dataset.v===v));}
+function sO(b){cOut=b.dataset.v;document.querySelectorAll('#oTog .sb').forEach(x=>x.classList.toggle('on',x===b));document.getElementById('schEd').classList.toggle('open',cOut==='structured');}
+
+// Depth card mosaics
+function mkDM(id,colors){
+    const el=document.getElementById(id);if(!el)return;
+    for(let i=0;i<12;i++){
+        const d=document.createElement('div');d.className='mc';
+        const isW=i===4||i===9; // intentional white squares
+        d.style.background=isW?'#FFFFFF':colors[i%colors.length];
+        d.style.opacity=isW?'1':(0.45+Math.random()*0.55).toFixed(2);
+        el.appendChild(d);
+    }
+}
+mkDM('dm1',['#E8DFD0','#D4C9B5','#C8BDA8','#B8A88F','#A69882','#C4A882','#D4C9B5','#E8DFD0','#C8BDA8','#B8A88F','#A69882','#D4C9B5']);
+mkDM('dm2',['#9BAA9B','#B8C8B8','#8B9E8B','#A8B8A8','#C4D4C4','#D8E4D8','#A8B8A8','#8B9E8B','#C4D4C4','#9BAA9B','#B8C8B8','#D8E4D8']);
+mkDM('dm3',['#C4A882','#D4BC9E','#B8956E','#E8D4BE','#D4C0A8','#C8BDA8','#B8956E','#D4BC9E','#C4A882','#E8D4BE','#D4C0A8','#C8BDA8']);
+
+// TIMER
+function mkT(el){const s=Date.now();const u=()=>{el.textContent=((Date.now()-s)/1000).toFixed(1)+'s';};u();return setInterval(u,100);}
+
+// MARKDOWN
+function md(t){
+    if(!t)return'';
+    let s=t.replace(/\r\n/g,'\n');
+    s=s.replace(/```(\w*)\n([\s\S]*?)```/g,(_,l,c)=>`<pre><code>${h(c.trim())}</code></pre>`);
+    const blocks=s.split(/\n\n+/);let out='';
+    for(let b of blocks){
+        b=b.trim();if(!b||b.startsWith('<pre>')){out+=b;continue;}
+        const lines=b.split('\n');
+        const isList=lines.every(l=>/^\s*[-*]\s|^\s*\d+\.\s|^\s*$/.test(l));
+        if(isList){out+='<ul>';for(const l of lines){const m=l.match(/^\s*[-*]\s+(.*)/);if(m)out+=`<li>${inl(m[1])}</li>`;const n=l.match(/^\s*\d+\.\s+(.*)/);if(n)out+=`<li>${inl(n[1])}</li>`;}out+='</ul>';}
+        else{const hm=b.match(/^(#{1,3})\s+(.+)/);if(hm){out+=`<h${hm[1].length}>${inl(hm[2])}</h${hm[1].length}>`;}else{out+=`<p>${inl(b.replace(/\n/g,'<br>'))}</p>`;}}
+    }
+    return out;
+}
+function inl(s){return s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');}
+function h(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function hJ(o){const s=typeof o==='string'?o:JSON.stringify(o,null,2);return h(s).replace(/"([^"]+)"(?=\s*:)/g,'<span class="json-key">"$1"</span>').replace(/:\s*"([^"]*)"/g,': <span class="json-str">"$1"</span>').replace(/:\s*(\d+\.?\d*)/g,': <span class="json-num">$1</span>').replace(/:\s*(true|false)/g,': <span class="json-bool">$1</span>').replace(/:\s*(null)/g,': <span class="json-null">$1</span>');}
+function cp(t,b){navigator.clipboard.writeText(t).then(()=>{const o=b.textContent;b.textContent='copied';setTimeout(()=>b.textContent=o,1500);});}
+
+// SEARCH
+async function doSearch(){
+    const ak=gK();if(!ak){alert('Enter your Linkup API key');kI.focus();return;}
+    const q=document.getElementById('sQ').value.trim();if(!q){alert('Enter a search query');return;}
+    const btn=document.getElementById('sBtn'),rEl=document.getElementById('sRes');
+    const pl={q,depth:cDepth,outputType:cOut};
+    if(cOut==='structured')pl.structuredOutputSchema=document.getElementById('schIn').value.trim();
+    const fd=document.getElementById('fDate').value,td=document.getElementById('tDate').value;
+    const iD=document.getElementById('incD').value.trim(),eD=document.getElementById('excD').value.trim();
+    if(fd)pl.fromDate=fd;if(td)pl.toDate=td;
+    if(iD)pl.includeDomains=iD.split(',').map(d=>d.trim()).filter(Boolean);
+    if(eD)pl.excludeDomains=eD.split(',').map(d=>d.trim()).filter(Boolean);
+
+    btn.disabled=true;btn.innerHTML='<div class="spinner"></div><span class="tm" id="sT">0.0s</span>';
+    rEl.innerHTML='';rEl.classList.remove('vis');
+    document.getElementById('ph').classList.add('hidden');
+    const tm=mkT(document.getElementById('sT')),t0=Date.now();
+
+    try{
+        const r=await fetch('https://api.linkup.so/v1/search',{method:'POST',headers:{'Authorization':`Bearer ${ak}`,'Content-Type':'application/json'},body:JSON.stringify(pl)});
+        const el=((Date.now()-t0)/1000).toFixed(2);clearInterval(tm);
+        if(!r.ok){const e=await r.json().catch(()=>({}));const msg=e.message||(e.error&&e.error.message)||(typeof e.error==='string'?e.error:null)||e.detail||`HTTP ${r.status}: ${r.statusText}`;throw new Error(msg);}
+        const d=await r.json();rSR(d,el,pl);
+    }catch(e){clearInterval(tm);const em=typeof e.message==='string'?e.message:JSON.stringify(e.message||e);rEl.innerHTML=`<div class="errb"><b>Error</b>${h(em)}</div>`;rEl.classList.add('vis');}
+    finally{btn.disabled=false;btn.innerHTML='<span class="sq"></span>Run Search';}
+}
+
+function rSR(data,el,pl){
+    const rEl=document.getElementById('sRes'),cost=pl.depth==='deep'?'$0.05':pl.depth==='fast'?'$0.001':'$0.005';
+    const raw=JSON.stringify(data,null,2);
+    let o=`<div style="padding:24px"><div class="rc"><div class="meta"><div class="mi"><span class="dot"></span> <b>${el}s</b></div><div class="mi">depth <b>${pl.depth}</b></div><div class="mi">output <b>${pl.outputType}</b></div><div class="mi">~<b>${cost}</b></div></div><div class="rb">`;
+
+    if(pl.outputType==='searchResults'){
+        const rs=data.results||[];
+        o+=`<div class="r-count">${rs.length} source${rs.length!==1?'s':''}</div>`;
+        rs.forEach((r,i)=>{
+            const c=r.content||'',tr=c.length>300,pv=tr?c.slice(0,300)+'...':c;
+            o+=`<div class="si"><div class="si-t"><a href="${h(r.url||'#')}" target="_blank" rel="noopener">${h(r.name||'Untitled')}</a></div><div class="si-u">${h(r.url||'')}</div><div class="si-c" id="s${i}">${h(pv)}</div>${tr?`<button class="si-e" onclick="tS(${i},this)" data-f="${btoa(unescape(encodeURIComponent(c)))}">show more</button>`:''}</div>`;
+        });
+    }else if(pl.outputType==='sourcedAnswer'){
+        const ans=data.answer||data.output||'',srcs=data.sources||data.results||[];
+        o+=`<div class="ans">${md(ans)}</div>`;
+        if(srcs.length){
+            const top=srcs.slice(0,5);
+            o+=`<div class="sf"><div class="sf-hd">Top sources</div><ul class="sl">`;
+            top.forEach((s,i)=>{const u=s.url||s,n=s.name||u;let dom='';try{dom=new URL(u).hostname.replace('www.','');}catch(e){dom=u;}o+=`<li><span class="sn">${i+1}</span><div class="sinfo"><a href="${h(u)}" target="_blank" rel="noopener"><span class="sname">${h(n)}</span><span class="sdom">${h(dom)}</span></a></div></li>`;});
+            o+='</ul></div>';
+        }
+    }else if(pl.outputType==='structured'){
+        const out=data.output||data.structured||data;const js=typeof out==='string'?out:JSON.stringify(out,null,2);
+        o+=`<div class="jw"><pre>${hJ(js)}</pre><button class="cpb" onclick="cp(document.getElementById('sj').textContent,this)">copy</button><pre id="sj" style="display:none">${h(js)}</pre></div>`;
+    }
+
+    o+=`</div><div class="rf"><button class="rawb" onclick="const p=this.closest('.rc').querySelector('.rawp');p.classList.toggle('open');this.textContent=p.classList.contains('open')?'hide raw':'show raw'">show raw</button></div><div class="rawp"><div class="jw"><pre>${hJ(raw)}</pre><button class="cpb" onclick="cp(this.closest('.jw').querySelector('pre').textContent,this)">copy</button></div></div></div></div>`;
+    rEl.innerHTML=o;rEl.classList.add('vis');
+}
+
+function tS(i,b){const el=document.getElementById('s'+i);if(b.textContent==='show more'){el.textContent=decodeURIComponent(escape(atob(b.dataset.f)));b.textContent='show less';}else{const f=decodeURIComponent(escape(atob(b.dataset.f)));el.textContent=f.slice(0,300)+'...';b.textContent='show more';}}
+
+// FETCH
+async function doFetch(){
+    const ak=gK();if(!ak){alert('Enter your Linkup API key');kI.focus();return;}
+    const url=document.getElementById('fUrl').value.trim();if(!url){alert('Enter a URL');return;}
+    const rj=document.getElementById('rJs').checked,btn=document.getElementById('fBtn'),rEl=document.getElementById('fRes');
+    btn.disabled=true;btn.innerHTML='<div class="spinner"></div><span class="tm" id="fT">0.0s</span>';
+    rEl.innerHTML='';rEl.classList.remove('vis');
+    document.getElementById('ph').classList.add('hidden');
+    const tm=mkT(document.getElementById('fT')),t0=Date.now();
+    try{
+        const r=await fetch('https://api.linkup.so/v1/fetch',{method:'POST',headers:{'Authorization':`Bearer ${ak}`,'Content-Type':'application/json'},body:JSON.stringify({url,renderJs:rj})});
+        const el=((Date.now()-t0)/1000).toFixed(2);clearInterval(tm);
+        if(!r.ok){const e=await r.json().catch(()=>({}));const msg=e.message||(e.error&&e.error.message)||(typeof e.error==='string'?e.error:null)||e.detail||`HTTP ${r.status}: ${r.statusText}`;throw new Error(msg);}
+        const d=await r.json();rFR(d,el,url);
+    }catch(e){clearInterval(tm);const em=typeof e.message==='string'?e.message:JSON.stringify(e.message||e);rEl.innerHTML=`<div class="errb"><b>Error</b>${h(em)}</div>`;rEl.classList.add('vis');}
+    finally{btn.disabled=false;btn.innerHTML='<span class="sq"></span>Fetch Page';}
+}
+
+function rFR(data,el,url){
+    const rEl=document.getElementById('fRes'),c=data.content||data.markdown||data.text||JSON.stringify(data,null,2);
+    let hn;try{hn=new URL(url).hostname;}catch(e){hn=url;}
+    rEl.innerHTML=`<div style="padding:24px"><div class="rc"><div class="meta"><div class="mi"><span class="dot"></span> <b>${el}s</b></div><div class="mi">url <b>${h(hn)}</b></div></div><div class="rb"><div class="ans fc">${md(c)}</div></div><div class="rf"><button class="rawb" onclick="const p=this.closest('.rc').querySelector('.rawp');p.classList.toggle('open');this.textContent=p.classList.contains('open')?'hide raw':'show raw'">show raw</button></div><div class="rawp"><div class="jw"><pre>${h(c)}</pre><button class="cpb" onclick="cp(this.closest('.jw').querySelector('pre').textContent,this)">copy</button></div></div></div></div>`;
+    rEl.classList.add('vis');
+}
+</script>
+</body>
+</html>
