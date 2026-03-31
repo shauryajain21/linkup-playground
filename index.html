@@ -570,27 +570,48 @@ function loadConfig(){
             if(ob)sO(ob);
         }
 
-        // Pre-built queries — styled as clickable chips above the textarea
+        // Pre-built queries — prominent section with label
         if(cfg.queries&&cfg.queries.length){
             const qWrap=document.getElementById('sQ').parentElement;
-            const box=document.createElement('div');
-            box.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px';
+            const section=document.createElement('div');
+            section.style.cssText='margin-bottom:14px;padding:14px;background:#F7F7F5;border:1px solid var(--brd);border-radius:10px;';
+
+            const label=document.createElement('div');
+            label.style.cssText='font-family:var(--m);font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;color:#8C8C8C;margin-bottom:10px;display:flex;align-items:center;gap:6px;';
+            label.innerHTML='<span style="display:inline-block;width:6px;height:6px;background:#0052CC;border-radius:50%;"></span> Optimized queries for '+(cfg.name||'you');
+            section.appendChild(label);
+
+            const chips=document.createElement('div');
+            chips.style.cssText='display:flex;flex-direction:column;gap:6px;';
+
             cfg.queries.forEach((q,i)=>{
                 const chip=document.createElement('button');
-                chip.textContent=q.q.length>50?q.q.slice(0,50)+'...':q.q;
-                chip.style.cssText='font-family:var(--m);font-size:11px;padding:6px 12px;border:1px solid var(--brd);border-radius:6px;background:var(--bg);color:var(--t1);cursor:pointer;transition:all .12s;text-align:left;line-height:1.4;';
-                chip.onmouseenter=()=>{chip.style.borderColor='#0052CC';chip.style.background='#E8F0FE';chip.style.color='#0052CC';};
-                chip.onmouseleave=()=>{chip.style.borderColor='';chip.style.background='';chip.style.color='';};
+                chip.style.cssText='font-family:var(--f);font-size:13px;padding:10px 14px;border:1px solid #E5E5E5;border-radius:8px;background:#FFF;color:var(--t1);cursor:pointer;transition:all .12s;text-align:left;line-height:1.4;display:flex;align-items:center;gap:10px;';
+                const arrow=document.createElement('span');
+                arrow.textContent='\u2192';
+                arrow.style.cssText='color:#B0B0B0;font-size:14px;flex-shrink:0;transition:color .12s;';
+                const text=document.createElement('span');
+                text.textContent=q.q;
+                text.style.cssText='flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+                const badge=document.createElement('span');
+                badge.textContent=q.depth||'standard';
+                badge.style.cssText='font-family:var(--m);font-size:9px;padding:2px 6px;border-radius:3px;background:#F0F0F0;color:#8C8C8C;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px;';
+                chip.appendChild(arrow);chip.appendChild(text);chip.appendChild(badge);
+
+                chip.onmouseenter=()=>{chip.style.borderColor='#0052CC';chip.style.background='#F0F5FF';arrow.style.color='#0052CC';};
+                chip.onmouseleave=()=>{
+                    if(!chip.classList.contains('active')){chip.style.borderColor='#E5E5E5';chip.style.background='#FFF';arrow.style.color='#B0B0B0';}
+                };
                 chip.onclick=()=>{
                     document.getElementById('sQ').value=q.q;
                     if(q.depth)sD(q.depth);
-                    // highlight active
-                    box.querySelectorAll('button').forEach(b=>{b.style.borderColor='';b.style.background='';b.style.color='';});
-                    chip.style.borderColor='#0052CC';chip.style.background='#E8F0FE';chip.style.color='#0052CC';
+                    chips.querySelectorAll('button').forEach(b=>{b.classList.remove('active');b.style.borderColor='#E5E5E5';b.style.background='#FFF';b.querySelector('span').style.color='#B0B0B0';});
+                    chip.classList.add('active');chip.style.borderColor='#0052CC';chip.style.background='#F0F5FF';arrow.style.color='#0052CC';
                 };
-                box.appendChild(chip);
+                chips.appendChild(chip);
             });
-            qWrap.insertBefore(box,document.getElementById('sQ'));
+            section.appendChild(chips);
+            qWrap.insertBefore(section,document.getElementById('sQ'));
         }
     }catch(e){console.error('Failed to load config:',e);}
 }
