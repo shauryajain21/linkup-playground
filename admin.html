@@ -192,14 +192,17 @@
         <div class="card-title">Pre-built Queries</div>
         <p style="font-size:13px;color:var(--t2);margin-bottom:16px">These will appear as selectable options in the playground. The customer can pick one or type their own.</p>
         <div class="query-list" id="queryList">
-            <div class="query-item">
-                <input type="text" placeholder="e.g. What is the latest funding round for Acme Corp?">
-                <select>
-                    <option value="standard">Standard</option>
-                    <option value="fast">Fast</option>
-                    <option value="deep">Deep</option>
-                </select>
-                <button class="remove-btn" onclick="removeQuery(this)">&times;</button>
+            <div class="query-item" style="flex-direction:column;gap:6px">
+                <div style="display:flex;gap:8px;align-items:center;width:100%">
+                    <input type="text" class="q-title" placeholder="Title — e.g. Regulatory Updates" style="flex:1;font-weight:600">
+                    <select>
+                        <option value="standard">Standard</option>
+                        <option value="fast">Fast</option>
+                        <option value="deep">Deep</option>
+                    </select>
+                    <button class="remove-btn" onclick="removeQuery(this)">&times;</button>
+                </div>
+                <textarea class="q-body" placeholder="Query — e.g. Find the latest regulatory updates for {company} in {jurisdiction}" style="min-height:48px;font-size:13px"></textarea>
             </div>
         </div>
         <button class="add-btn" onclick="addQuery()">+ Add query</button>
@@ -263,14 +266,18 @@ function addQuery() {
     const list = document.getElementById('queryList');
     const item = document.createElement('div');
     item.className = 'query-item';
+    item.style.cssText = 'flex-direction:column;gap:6px';
     item.innerHTML = `
-        <input type="text" placeholder="e.g. Find the pricing page for ...">
-        <select>
-            <option value="standard">Standard</option>
-            <option value="fast">Fast</option>
-            <option value="deep">Deep</option>
-        </select>
-        <button class="remove-btn" onclick="removeQuery(this)">&times;</button>
+        <div style="display:flex;gap:8px;align-items:center;width:100%">
+            <input type="text" class="q-title" placeholder="Title — e.g. Company Pricing" style="flex:1;font-weight:600">
+            <select>
+                <option value="standard">Standard</option>
+                <option value="fast">Fast</option>
+                <option value="deep">Deep</option>
+            </select>
+            <button class="remove-btn" onclick="removeQuery(this)">&times;</button>
+        </div>
+        <textarea class="q-body" placeholder="Query — e.g. Find the pricing page for {company}" style="min-height:48px;font-size:13px"></textarea>
     `;
     list.appendChild(item);
 }
@@ -298,9 +305,10 @@ function previewLogo() {
 function getConfig() {
     const queries = [];
     document.querySelectorAll('.query-item').forEach(item => {
-        const q = item.querySelector('input').value.trim();
+        const title = (item.querySelector('.q-title')||{}).value?.trim()||'';
+        const q = (item.querySelector('.q-body')||item.querySelector('input:not(.q-title)')||{}).value?.trim()||'';
         const d = item.querySelector('select').value;
-        if (q) queries.push({ q, depth: d });
+        if (q) queries.push({ title, q, depth: d });
     });
 
     return {
@@ -395,7 +403,8 @@ function loadConfig(i) {
     (c.queries || []).forEach(q => {
         const item = document.createElement('div');
         item.className = 'query-item';
-        item.innerHTML = `<input type="text" value="${esc(q.q)}"><select><option value="standard" ${q.depth==='standard'?'selected':''}>Standard</option><option value="fast" ${q.depth==='fast'?'selected':''}>Fast</option><option value="deep" ${q.depth==='deep'?'selected':''}>Deep</option></select><button class="remove-btn" onclick="removeQuery(this)">&times;</button>`;
+        item.style.cssText = 'flex-direction:column;gap:6px';
+        item.innerHTML = `<div style="display:flex;gap:8px;align-items:center;width:100%"><input type="text" class="q-title" value="${esc(q.title||'')}" placeholder="Title" style="flex:1;font-weight:600"><select><option value="standard" ${q.depth==='standard'?'selected':''}>Standard</option><option value="fast" ${q.depth==='fast'?'selected':''}>Fast</option><option value="deep" ${q.depth==='deep'?'selected':''}>Deep</option></select><button class="remove-btn" onclick="removeQuery(this)">&times;</button></div><textarea class="q-body" style="min-height:48px;font-size:13px">${esc(q.q)}</textarea>`;
         list.appendChild(item);
     });
     if (!list.children.length) addQuery();

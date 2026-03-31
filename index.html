@@ -681,13 +681,24 @@ function loadConfig(){
                 const arrow=document.createElement('span');
                 arrow.textContent='\u2192';
                 arrow.style.cssText='color:#B0B0B0;font-size:14px;flex-shrink:0;transition:color .12s;';
-                const text=document.createElement('span');
-                text.textContent=q.q;
-                text.style.cssText='flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+                const textWrap=document.createElement('span');
+                textWrap.style.cssText='flex:1;overflow:hidden;min-width:0;';
+                if(q.title){
+                    const titleEl=document.createElement('span');
+                    titleEl.textContent=q.title;
+                    titleEl.style.cssText='display:block;font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+                    const descEl=document.createElement('span');
+                    descEl.textContent=q.q;
+                    descEl.style.cssText='display:block;font-size:11px;color:#8C8C8C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;';
+                    textWrap.appendChild(titleEl);textWrap.appendChild(descEl);
+                }else{
+                    textWrap.textContent=q.q;
+                    textWrap.style.cssText+='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+                }
                 const badge=document.createElement('span');
                 badge.textContent=q.depth||'standard';
                 badge.style.cssText='font-family:var(--m);font-size:9px;padding:2px 6px;border-radius:3px;background:#F0F0F0;color:#8C8C8C;flex-shrink:0;text-transform:uppercase;letter-spacing:.3px;';
-                chip.appendChild(arrow);chip.appendChild(text);chip.appendChild(badge);
+                chip.appendChild(arrow);chip.appendChild(textWrap);chip.appendChild(badge);
 
                 chip.onmouseenter=()=>{chip.style.borderColor='#0052CC';chip.style.background='#F0F5FF';arrow.style.color='#0052CC';};
                 chip.onmouseleave=()=>{
