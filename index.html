@@ -438,13 +438,57 @@ function md(t){
     if(!t)return'';
     let s=t.replace(/\r\n/g,'\n');
     s=s.replace(/```(\w*)\n([\s\S]*?)```/g,(_,l,c)=>`<pre><code>${h(c.trim())}</code></pre>`);
+
+    // Split numbered items (1. Title: ...\ndetails\n\n2. Title:...) into blocks
+    // This handles multi-line numbered items that aren't separated by double newlines
+    s=s.replace(/\n(\d+\.\s)/g,'\n\n$1');
+
     const blocks=s.split(/\n\n+/);let out='';
     for(let b of blocks){
         b=b.trim();if(!b||b.startsWith('<pre>')){out+=b;continue;}
         const lines=b.split('\n');
-        const isList=lines.every(l=>/^\s*[-*]\s|^\s*\d+\.\s|^\s*$/.test(l));
-        if(isList){out+='<ul>';for(const l of lines){const m=l.match(/^\s*[-*]\s+(.*)/);if(m)out+=`<li>${inl(m[1])}</li>`;const n=l.match(/^\s*\d+\.\s+(.*)/);if(n)out+=`<li>${inl(n[1])}</li>`;}out+='</ul>';}
-        else{const hm=b.match(/^(#{1,3})\s+(.+)/);if(hm){out+=`<h${hm[1].length}>${inl(hm[2])}</h${hm[1].length}>`;}else{out+=`<p>${inl(b.replace(/\n/g,'<br>'))}</p>`;}}
+
+        // Check if block starts with a numbered item (e.g. "1. Title: ...")
+        const numMatch=b.match(/^(\d+)\.\s+(.+)/);
+        if(numMatch){
+            // Render as a styled card-like block
+            const firstLine=lines[0].replace(/^\d+\.\s+/,'');
+            const rest=lines.slice(1).map(l=>l.trim()).filter(Boolean);
+
+            // Check if first line has "Title:" or "**Title:**" pattern
+            const titleMatch=firstLine.match(/^(?:\*\*)?(?:Title|Name|Subject)\s*:?\s*\*?\*?\s*(.*)/i);
+            const title=titleMatch?titleMatch[1]:firstLine;
+            const bodyLines=titleMatch?rest:rest;
+
+            out+='<div style="margin-bottom:16px;padding:14px 16px;border-left:3px solid #7DD3FC;background:rgba(125,211,252,.04);border-radius:0 8px 8px 0;">';
+            out+=`<div style="font-size:14px;font-weight:600;color:#E8ECF1;margin-bottom:6px;">${inl(title)}</div>`;
+            if(bodyLines.length){
+                out+='<div style="font-size:12px;color:#9CA3AF;line-height:1.7;">';
+                bodyLines.forEach(l=>{
+                    // Format "Key: Value" lines
+                    const kv=l.match(/^[-•]?\s*(?:\*\*)?([^:]+?)(?:\*\*)?\s*:\s*(.*)/);
+                    if(kv){
+                        out+=`<div style="margin-bottom:4px;"><span style="color:#FCD34D;font-weight:500;">${inl(kv[1])}:</span> <span style="color:#D1D5DB;">${inl(kv[2])}</span></div>`;
+                    }else{
+                        out+=`<div style="margin-bottom:4px;color:#D1D5DB;">${inl(l)}</div>`;
+                    }
+                });
+                out+='</div>';
+            }
+            out+='</div>';
+            continue;
+        }
+
+        // Regular list check
+        const isList=lines.every(l=>/^\s*[-*•]\s|^\s*$/.test(l));
+        if(isList){out+='<ul>';for(const l of lines){const m=l.match(/^\s*[-*•]\s+(.*)/);if(m)out+=`<li>${inl(m[1])}</li>`;}out+='</ul>';continue;}
+
+        // Heading
+        const hm=b.match(/^(#{1,3})\s+(.+)/);
+        if(hm){out+=`<h${hm[1].length}>${inl(hm[2])}</h${hm[1].length}>`;continue;}
+
+        // Paragraph
+        out+=`<p>${inl(b.replace(/\n/g,'<br>'))}</p>`;
     }
     return out;
 }
