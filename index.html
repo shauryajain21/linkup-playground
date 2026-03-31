@@ -576,6 +576,44 @@ function loadConfig(){
             if(ob)sO(ob);
         }
 
+        // Fill form for {placeholders}
+        window._fillTemplate='';
+        window.showFillForm=function(template,fields){
+            window._fillTemplate=template;
+            let existing=document.getElementById('fillForm');
+            if(!existing){
+                existing=document.createElement('div');
+                existing.id='fillForm';
+                const qWrap=document.getElementById('sQ').parentElement;
+                qWrap.insertBefore(existing,document.getElementById('sQ'));
+            }
+            existing.style.cssText='margin-bottom:12px;padding:16px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;';
+            let html='<div style="font-family:var(--m);font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;color:#B45309;margin-bottom:12px;display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:6px;height:6px;background:#F59E0B;border-radius:50%;"></span> Fill in the details</div>';
+            html+='<div style="display:flex;flex-direction:column;gap:8px;">';
+            fields.forEach(f=>{
+                const label=f.replace(/[_-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+                html+=`<div><label style="font-size:12px;font-weight:600;color:#92400E;display:block;margin-bottom:4px;">${label}</label><input type="text" class="fill-input" data-field="${f}" placeholder="Enter ${label.toLowerCase()}" style="font-size:13px;padding:8px 12px;border:1px solid #FDE68A;border-radius:6px;width:100%;background:#FFF;outline:none;" onfocus="this.style.borderColor='#F59E0B'" onblur="this.style.borderColor='#FDE68A'"></div>`;
+            });
+            html+='</div>';
+            html+=`<button onclick="applyFill()" style="margin-top:10px;font-family:var(--f);font-size:12px;font-weight:600;padding:8px 16px;background:#F59E0B;color:#FFF;border:none;border-radius:6px;cursor:pointer;transition:all .12s;width:100%;" onmouseenter="this.style.background='#D97706'" onmouseleave="this.style.background='#F59E0B'">Apply &amp; fill query</button>`;
+            existing.innerHTML=html;
+            existing.style.display='block';
+        };
+        window.hideFillForm=function(){
+            const f=document.getElementById('fillForm');
+            if(f)f.style.display='none';
+        };
+        window.applyFill=function(){
+            let q=window._fillTemplate;
+            document.querySelectorAll('.fill-input').forEach(inp=>{
+                const field=inp.dataset.field;
+                const val=inp.value.trim()||'{'+field+'}';
+                q=q.replace(new RegExp('\\{'+field.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\}','g'),val);
+            });
+            document.getElementById('sQ').value=q;
+            hideFillForm();
+        };
+
         // Pre-built queries — prominent section with label
         if(cfg.queries&&cfg.queries.length){
             const qWrap=document.getElementById('sQ').parentElement;
@@ -609,10 +647,18 @@ function loadConfig(){
                     if(!chip.classList.contains('active')){chip.style.borderColor='#E5E5E5';chip.style.background='#FFF';arrow.style.color='#B0B0B0';}
                 };
                 chip.onclick=()=>{
-                    document.getElementById('sQ').value=q.q;
-                    if(q.depth)sD(q.depth);
+                    // Highlight
                     chips.querySelectorAll('button').forEach(b=>{b.classList.remove('active');b.style.borderColor='#E5E5E5';b.style.background='#FFF';b.querySelector('span').style.color='#B0B0B0';});
                     chip.classList.add('active');chip.style.borderColor='#0052CC';chip.style.background='#F0F5FF';arrow.style.color='#0052CC';
+                    if(q.depth)sD(q.depth);
+                    // Check for {placeholders}
+                    const phs=[...new Set((q.q.match(/\{([^}]+)\}/g)||[]).map(m=>m.slice(1,-1)))];
+                    if(phs.length){
+                        showFillForm(q.q,phs);
+                    }else{
+                        document.getElementById('sQ').value=q.q;
+                        hideFillForm();
+                    }
                 };
                 chips.appendChild(chip);
             });
