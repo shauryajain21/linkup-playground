@@ -55,6 +55,23 @@
         .right::-webkit-scrollbar{width:4px}
         .right::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
 
+        /* ═══ SEARCHING ANIMATION ═══ */
+        .searching{display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:24px;padding:40px}
+        .searching.vis{display:flex}
+        .search-anim{position:relative;width:120px;height:120px}
+        .search-anim .ring{position:absolute;inset:0;border:2px solid transparent;border-top-color:#7DD3FC;border-radius:50%;animation:orbit 1.2s linear infinite}
+        .search-anim .ring:nth-child(2){inset:12px;border-top-color:#C4B5FD;animation-duration:1.6s;animation-direction:reverse}
+        .search-anim .ring:nth-child(3){inset:24px;border-top-color:#FCD34D;animation-duration:2s}
+        .search-anim .dot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:8px;height:8px;background:#7DD3FC;border-radius:50%;animation:pulse 1s ease-in-out infinite}
+        @keyframes orbit{to{transform:rotate(360deg)}}
+        @keyframes pulse{0%,100%{opacity:.4;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.5)}}
+        .search-status{text-align:center}
+        .search-status .label{font-family:var(--m);font-size:13px;color:#D1D5DB;margin-bottom:6px}
+        .search-status .timer{font-family:var(--m);font-size:24px;font-weight:600;color:#7DD3FC;letter-spacing:-.5px}
+        .search-status .sub{font-family:var(--m);font-size:10px;color:#555;margin-top:8px;letter-spacing:.3px}
+        .search-dots::after{content:'';animation:dots 1.5s steps(4,end) infinite}
+        @keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+
         /* ═══ PLACEHOLDER (empty output) ═══ */
         .placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:20px;padding:40px;text-align:center}
         .placeholder.hidden{display:none}
@@ -375,6 +392,21 @@
             <div class="ph-mono">linkup.so/v1/search</div>
         </div>
 
+        <!-- Searching animation -->
+        <div class="searching" id="searchingAnim">
+            <div class="search-anim">
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="search-status">
+                <div class="label">Searching<span class="search-dots"></span></div>
+                <div class="timer" id="animTimer">0.0s</div>
+                <div class="sub" id="animDepth"></div>
+            </div>
+        </div>
+
         <!-- Results -->
         <div class="res" id="sRes"></div>
         <div class="res" id="fRes"></div>
@@ -513,14 +545,20 @@ async function doSearch(){
     btn.disabled=true;btn.innerHTML='<div class="spinner"></div><span class="tm" id="sT">0.0s</span>';
     rEl.innerHTML='';rEl.classList.remove('vis');
     document.getElementById('ph').classList.add('hidden');
+    // Show searching animation
+    const sa=document.getElementById('searchingAnim');
+    sa.classList.add('vis');
+    document.getElementById('animDepth').textContent=pl.depth+' depth \u00B7 '+pl.outputType;
     const tm=mkT(document.getElementById('sT')),t0=Date.now();
+    const animTm=mkT(document.getElementById('animTimer'));
 
     try{
         const r=await fetch('https://api.linkup.so/v1/search',{method:'POST',headers:{'Authorization':`Bearer ${ak}`,'Content-Type':'application/json'},body:JSON.stringify(pl)});
-        const el=((Date.now()-t0)/1000).toFixed(2);clearInterval(tm);
+        const el=((Date.now()-t0)/1000).toFixed(2);clearInterval(tm);clearInterval(animTm);
+        sa.classList.remove('vis');
         if(!r.ok){const e=await r.json().catch(()=>({}));const msg=e.message||(e.error&&e.error.message)||(typeof e.error==='string'?e.error:null)||e.detail||`HTTP ${r.status}: ${r.statusText}`;throw new Error(msg);}
         const d=await r.json();rSR(d,el,pl);
-    }catch(e){clearInterval(tm);const em=typeof e.message==='string'?e.message:JSON.stringify(e.message||e);rEl.innerHTML=`<div class="errb"><b>Error</b>${h(em)}</div>`;rEl.classList.add('vis');}
+    }catch(e){clearInterval(tm);clearInterval(animTm);sa.classList.remove('vis');const em=typeof e.message==='string'?e.message:JSON.stringify(e.message||e);rEl.innerHTML=`<div class="errb"><b>Error</b>${h(em)}</div>`;rEl.classList.add('vis');}
     finally{btn.disabled=false;btn.innerHTML='<span class="sq"></span>Run Search';}
 }
 
@@ -561,16 +599,22 @@ async function doFetch(){
     const ak=gK();if(!ak){alert('Enter your Linkup API key');kI.focus();return;}
     const url=document.getElementById('fUrl').value.trim();if(!url){alert('Enter a URL');return;}
     const rj=document.getElementById('rJs').checked,btn=document.getElementById('fBtn'),rEl=document.getElementById('fRes');
+    let hn;try{hn=new URL(url).hostname;}catch(e){hn=url;}
     btn.disabled=true;btn.innerHTML='<div class="spinner"></div><span class="tm" id="fT">0.0s</span>';
     rEl.innerHTML='';rEl.classList.remove('vis');
     document.getElementById('ph').classList.add('hidden');
+    const sa=document.getElementById('searchingAnim');
+    sa.classList.add('vis');
+    document.getElementById('animDepth').textContent='fetching \u00B7 '+hn;
     const tm=mkT(document.getElementById('fT')),t0=Date.now();
+    const animTm=mkT(document.getElementById('animTimer'));
     try{
         const r=await fetch('https://api.linkup.so/v1/fetch',{method:'POST',headers:{'Authorization':`Bearer ${ak}`,'Content-Type':'application/json'},body:JSON.stringify({url,renderJs:rj})});
-        const el=((Date.now()-t0)/1000).toFixed(2);clearInterval(tm);
+        const el=((Date.now()-t0)/1000).toFixed(2);clearInterval(tm);clearInterval(animTm);
+        sa.classList.remove('vis');
         if(!r.ok){const e=await r.json().catch(()=>({}));const msg=e.message||(e.error&&e.error.message)||(typeof e.error==='string'?e.error:null)||e.detail||`HTTP ${r.status}: ${r.statusText}`;throw new Error(msg);}
         const d=await r.json();rFR(d,el,url);
-    }catch(e){clearInterval(tm);const em=typeof e.message==='string'?e.message:JSON.stringify(e.message||e);rEl.innerHTML=`<div class="errb"><b>Error</b>${h(em)}</div>`;rEl.classList.add('vis');}
+    }catch(e){clearInterval(tm);clearInterval(animTm);sa.classList.remove('vis');const em=typeof e.message==='string'?e.message:JSON.stringify(e.message||e);rEl.innerHTML=`<div class="errb"><b>Error</b>${h(em)}</div>`;rEl.classList.add('vis');}
     finally{btn.disabled=false;btn.innerHTML='<span class="sq"></span>Fetch Page';}
 }
 
