@@ -622,8 +622,10 @@ function loadConfig(){
 
         // Fill form for {placeholders}
         window._fillTemplate='';
-        window.showFillForm=function(template,fields){
+        window._fillAutoRun=false;
+        window.showFillForm=function(template,fields,autoRun){
             window._fillTemplate=template;
+            window._fillAutoRun=!!autoRun;
             let existing=document.getElementById('fillForm');
             if(!existing){
                 existing=document.createElement('div');
@@ -642,7 +644,8 @@ function loadConfig(){
                 html+=`<div><label style="font-size:12px;font-weight:600;color:#92400E;display:block;margin-bottom:4px;">${label}</label><input type="text" class="fill-input" data-field="${f}" placeholder="Enter ${label.toLowerCase()}" style="font-size:13px;padding:8px 12px;border:1px solid #FDE68A;border-radius:6px;width:100%;background:#FFF;outline:none;" onfocus="this.style.borderColor='#F59E0B'" onblur="this.style.borderColor='#FDE68A'"></div>`;
             });
             html+='</div>';
-            html+=`<button onclick="applyFill()" style="margin-top:10px;font-family:var(--f);font-size:12px;font-weight:600;padding:8px 16px;background:#F59E0B;color:#FFF;border:none;border-radius:6px;cursor:pointer;transition:all .12s;width:100%;" onmouseenter="this.style.background='#D97706'" onmouseleave="this.style.background='#F59E0B'">Apply &amp; fill query</button>`;
+            const btnLabel=autoRun?'Apply &amp; run search':'Apply &amp; fill query';
+            html+=`<button onclick="applyFill()" style="margin-top:10px;font-family:var(--f);font-size:12px;font-weight:600;padding:8px 16px;background:#F59E0B;color:#FFF;border:none;border-radius:6px;cursor:pointer;transition:all .12s;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;" onmouseenter="this.style.background='#D97706'" onmouseleave="this.style.background='#F59E0B'">${btnLabel}</button>`;
             existing.innerHTML=html;
             existing.style.display='block';
         };
@@ -652,13 +655,16 @@ function loadConfig(){
         };
         window.applyFill=function(){
             let q=window._fillTemplate;
+            let allFilled=true;
             document.querySelectorAll('.fill-input').forEach(inp=>{
                 const field=inp.dataset.field;
-                const val=inp.value.trim()||'{'+field+'}';
-                q=q.replace(new RegExp('\\{'+field.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\}','g'),val);
+                const val=inp.value.trim();
+                if(!val)allFilled=false;
+                q=q.replace(new RegExp('\\{'+field.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\}','g'),val||'{'+field+'}');
             });
             document.getElementById('sQ').value=q;
             hideFillForm();
+            if(allFilled&&window._fillAutoRun)doSearch();
         };
 
         // Pre-built queries — prominent section with label
@@ -712,16 +718,41 @@ function loadConfig(){
                     // Check for {placeholders}
                     const phs=[...new Set((q.q.match(/\{([^}]+)\}/g)||[]).map(m=>m.slice(1,-1)))];
                     if(phs.length){
-                        showFillForm(q.q,phs);
+                        showFillForm(q.q,phs,true);
                     }else{
                         document.getElementById('sQ').value=q.q;
                         hideFillForm();
+                        doSearch(); // auto-run
                     }
                 };
                 chips.appendChild(chip);
             });
             section.appendChild(chips);
             qWrap.insertBefore(section,document.getElementById('sQ'));
+
+            // Auto-trigger the first query on load
+            const firstQ=cfg.queries[0];
+            if(firstQ){
+                // Highlight first chip
+                const firstChip=chips.querySelector('button');
+                if(firstChip){
+                    firstChip.classList.add('active');
+                    firstChip.style.borderColor='#0052CC';
+                    firstChip.style.background='#F0F5FF';
+                    firstChip.querySelector('span').style.color='#0052CC';
+                }
+                if(firstQ.depth)sD(firstQ.depth);
+
+                const phs=[...new Set((firstQ.q.match(/\{([^}]+)\}/g)||[]).map(m=>m.slice(1,-1)))];
+                if(phs.length){
+                    // Has placeholders — show fill form immediately
+                    setTimeout(()=>showFillForm(firstQ.q,phs,true),100);
+                }else{
+                    // No placeholders — auto-run
+                    document.getElementById('sQ').value=firstQ.q;
+                    setTimeout(()=>doSearch(),100);
+                }
+            }
         }
     }catch(e){console.error('Failed to load config:',e);}
 }
