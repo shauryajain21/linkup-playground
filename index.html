@@ -186,9 +186,15 @@
         .cpb:hover{background:rgba(255,255,255,.1);color:#999}
 
         /* Footer */
-        .rf{padding:8px 16px;border-top:1px solid #2A2A2A;display:flex;justify-content:flex-end;background:#111}
-        .rawb{font-family:var(--m);font-size:9px;color:#555;background:none;border:1px solid #333;padding:4px 10px;border-radius:4px;cursor:pointer;transition:all .1s}
-        .rawb:hover{color:#999;border-color:#555}
+        .rf{padding:10px 20px;border-top:1px solid #2A2A2A;display:flex;justify-content:flex-end;align-items:center;gap:8px;background:#111}
+        .rawb{
+            font-family:var(--m);font-size:10px;color:#6B7280;background:#1A1A1A;
+            border:1px solid #333;padding:6px 14px;border-radius:6px;cursor:pointer;
+            transition:all .15s;display:flex;align-items:center;gap:6px;
+        }
+        .rawb::before{content:'{ }';font-size:9px;opacity:.5}
+        .rawb:hover{color:#D1D5DB;border-color:#555;background:#222}
+        .rawb.open{color:#7DD3FC;border-color:#7DD3FC33;background:#0D2847}
         .rawp{display:none;padding:0 24px 20px}
         .rawp.open{display:block}
 
@@ -500,7 +506,7 @@ function rSR(data,el,pl){
         o+=`<div class="jw"><pre>${hJ(js)}</pre><button class="cpb" onclick="cp(document.getElementById('sj').textContent,this)">copy</button><pre id="sj" style="display:none">${h(js)}</pre></div>`;
     }
 
-    o+=`</div><div class="rf"><button class="rawb" onclick="const p=this.closest('.rc').querySelector('.rawp');p.classList.toggle('open');this.textContent=p.classList.contains('open')?'hide raw':'show raw'">show raw</button></div><div class="rawp"><div class="jw"><pre>${hJ(raw)}</pre><button class="cpb" onclick="cp(this.closest('.jw').querySelector('pre').textContent,this)">copy</button></div></div></div></div>`;
+    o+=`</div><div class="rf"><button class="rawb" onclick="const p=this.closest('.rc').querySelector('.rawp');p.classList.toggle('open');this.classList.toggle('open');this.textContent=p.classList.contains('open')?'hide raw':'show raw'">show raw</button></div><div class="rawp"><div class="jw"><pre>${hJ(raw)}</pre><button class="cpb" onclick="cp(this.closest('.jw').querySelector('pre').textContent,this)">copy</button></div></div></div></div>`;
     rEl.innerHTML=o;rEl.classList.add('vis');
 }
 
@@ -527,7 +533,7 @@ async function doFetch(){
 function rFR(data,el,url){
     const rEl=document.getElementById('fRes'),c=data.content||data.markdown||data.text||JSON.stringify(data,null,2);
     let hn;try{hn=new URL(url).hostname;}catch(e){hn=url;}
-    rEl.innerHTML=`<div style="padding:24px"><div class="rc"><div class="meta"><div class="mi"><span class="dot"></span> <b>${el}s</b></div><div class="mi">url <b>${h(hn)}</b></div></div><div class="rb"><div class="ans fc">${md(c)}</div></div><div class="rf"><button class="rawb" onclick="const p=this.closest('.rc').querySelector('.rawp');p.classList.toggle('open');this.textContent=p.classList.contains('open')?'hide raw':'show raw'">show raw</button></div><div class="rawp"><div class="jw"><pre>${h(c)}</pre><button class="cpb" onclick="cp(this.closest('.jw').querySelector('pre').textContent,this)">copy</button></div></div></div></div>`;
+    rEl.innerHTML=`<div style="padding:24px"><div class="rc"><div class="meta"><div class="mi"><span class="dot"></span> <b>${el}s</b></div><div class="mi">url <b>${h(hn)}</b></div></div><div class="rb"><div class="ans fc">${md(c)}</div></div><div class="rf"><button class="rawb" onclick="const p=this.closest('.rc').querySelector('.rawp');p.classList.toggle('open');this.classList.toggle('open');this.textContent=p.classList.contains('open')?'hide raw':'show raw'">show raw</button></div><div class="rawp"><div class="jw"><pre>${h(c)}</pre><button class="cpb" onclick="cp(this.closest('.jw').querySelector('pre').textContent,this)">copy</button></div></div></div></div>`;
     rEl.classList.add('vis');
 }
 
