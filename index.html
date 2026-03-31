@@ -539,15 +539,19 @@ function loadConfig(){
     try{
         const cfg=JSON.parse(decodeURIComponent(escape(atob(c))));
 
-        // Customer logo — replace Linkup logo in nav
+        // Customer logo — add alongside Linkup logo
         if(cfg.logo){
-            const logoEl=document.querySelector('.nav-logo');
-            logoEl.innerHTML=`<img src="${cfg.logo}" alt="${cfg.name||'Logo'}" style="height:28px;width:auto;max-width:160px;object-fit:contain">`;
+            const navL=document.querySelector('.nav-l');
+            const sep2=document.createElement('div');sep2.className='nav-sep';
+            const img=document.createElement('img');
+            img.src=cfg.logo;img.alt=cfg.name||'Logo';
+            img.style.cssText='height:24px;width:auto;max-width:120px;object-fit:contain';
+            navL.appendChild(sep2);navL.appendChild(img);
         }
 
         // Company name in nav
         if(cfg.name){
-            document.querySelector('.nav-t').textContent=cfg.name;
+            document.querySelector('.nav-t').textContent=cfg.name+' \u00D7 Linkup';
             document.title=cfg.name+' — Linkup Demo';
         }
 
@@ -566,21 +570,27 @@ function loadConfig(){
             if(ob)sO(ob);
         }
 
-        // Pre-built queries — add a selector above the textarea
+        // Pre-built queries — styled as clickable chips above the textarea
         if(cfg.queries&&cfg.queries.length){
             const qWrap=document.getElementById('sQ').parentElement;
-            const sel=document.createElement('select');
-            sel.id='querySelect';
-            sel.style.cssText='font-family:var(--f);font-size:13px;padding:8px 12px;border:1px solid var(--brd);border-radius:8px;width:100%;margin-bottom:8px;background:var(--bg);color:var(--t1);cursor:pointer;outline:none;';
-            sel.innerHTML='<option value="">Select a query...</option>'+cfg.queries.map((q,i)=>`<option value="${i}">${q.q.length>80?q.q.slice(0,80)+'...':q.q}</option>`).join('');
-            sel.addEventListener('change',function(){
-                const idx=this.value;
-                if(idx==='')return;
-                const q=cfg.queries[idx];
-                document.getElementById('sQ').value=q.q;
-                if(q.depth)sD(q.depth);
+            const box=document.createElement('div');
+            box.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px';
+            cfg.queries.forEach((q,i)=>{
+                const chip=document.createElement('button');
+                chip.textContent=q.q.length>50?q.q.slice(0,50)+'...':q.q;
+                chip.style.cssText='font-family:var(--m);font-size:11px;padding:6px 12px;border:1px solid var(--brd);border-radius:6px;background:var(--bg);color:var(--t1);cursor:pointer;transition:all .12s;text-align:left;line-height:1.4;';
+                chip.onmouseenter=()=>{chip.style.borderColor='#0052CC';chip.style.background='#E8F0FE';chip.style.color='#0052CC';};
+                chip.onmouseleave=()=>{chip.style.borderColor='';chip.style.background='';chip.style.color='';};
+                chip.onclick=()=>{
+                    document.getElementById('sQ').value=q.q;
+                    if(q.depth)sD(q.depth);
+                    // highlight active
+                    box.querySelectorAll('button').forEach(b=>{b.style.borderColor='';b.style.background='';b.style.color='';});
+                    chip.style.borderColor='#0052CC';chip.style.background='#E8F0FE';chip.style.color='#0052CC';
+                };
+                box.appendChild(chip);
             });
-            qWrap.insertBefore(sel,document.getElementById('sQ'));
+            qWrap.insertBefore(box,document.getElementById('sQ'));
         }
     }catch(e){console.error('Failed to load config:',e);}
 }
