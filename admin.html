@@ -138,6 +138,26 @@
         }
         .saved-btn:hover{border-color:var(--brd2);color:var(--t1)}
         .saved-btn.del:hover{color:var(--err);border-color:#FECACA}
+
+        .cache-btn{
+            font-family:var(--m);font-size:11px;color:var(--acc);background:var(--acc-bg);
+            border:1px solid var(--acc);padding:7px 14px;border-radius:6px;
+            cursor:pointer;transition:all .12s;font-weight:500;
+        }
+        .cache-btn:hover{background:var(--acc);color:#fff}
+        .cache-btn:disabled{opacity:.5;cursor:not-allowed}
+        .cache-btn.cached{background:var(--ok);color:#fff;border-color:var(--ok)}
+        .cache-status{font-family:var(--m);font-size:11px;color:var(--t3)}
+        .cache-preview{margin-top:6px;background:#0D0D0D;border:1px solid #2A2A2A;border-radius:8px;padding:12px 14px;max-height:180px;overflow-y:auto;font-family:var(--m);font-size:11px;color:#999;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+        .q-output{
+            font-family:var(--f);font-size:12px;padding:10px 8px;
+            border:1px solid var(--brd);border-radius:8px;background:var(--bg);
+            color:var(--t1);outline:none;width:140px;cursor:pointer;
+        }
+        .gen-row{display:flex;gap:10px}
+        .gen-row .gen-btn{flex:1}
+        .gen-btn.cached-gen{background:var(--ok)}
+        .gen-btn.cached-gen:hover{background:#047857}
     </style>
 </head>
 <body>
@@ -165,6 +185,15 @@
 <div class="container">
     <h1>Create a demo link</h1>
     <p class="sub">Configure a branded playground for your customer with pre-built queries.</p>
+
+    <!-- Admin API Key -->
+    <div class="card" style="border-color:var(--acc);border-style:dashed">
+        <div class="card-title" style="color:var(--acc)">Your API Key (for running queries)</div>
+        <div class="fg">
+            <input type="text" id="adminApiKey" placeholder="lk-..." style="font-family:var(--m)">
+            <span style="font-size:11px;color:var(--t3);margin-top:4px;display:block">Used to run &amp; cache queries. NOT shared in the demo link.</span>
+        </div>
+    </div>
 
     <!-- Customer Info -->
     <div class="card">
@@ -195,14 +224,24 @@
             <div class="query-item" style="flex-direction:column;gap:6px">
                 <div style="display:flex;gap:8px;align-items:center;width:100%">
                     <input type="text" class="q-title" placeholder="Title — e.g. Regulatory Updates" style="flex:1;font-weight:600">
-                    <select>
+                    <select class="q-depth">
                         <option value="standard">Standard</option>
                         <option value="fast">Fast</option>
                         <option value="deep">Deep</option>
                     </select>
+                    <select class="q-output">
+                        <option value="sourcedAnswer">sourcedAnswer</option>
+                        <option value="searchResults">searchResults</option>
+                        <option value="structured">structured</option>
+                    </select>
                     <button class="remove-btn" onclick="removeQuery(this)">&times;</button>
                 </div>
                 <textarea class="q-body" placeholder="Query — e.g. Find the latest regulatory updates for {company} in {jurisdiction}" style="min-height:48px;font-size:13px"></textarea>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <button class="cache-btn" onclick="runAndCache(this)">&#9654; Run &amp; Cache</button>
+                    <span class="cache-status"></span>
+                </div>
+                <div class="cache-preview" style="display:none"></div>
             </div>
         </div>
         <button class="add-btn" onclick="addQuery()">+ Add query</button>
@@ -230,10 +269,16 @@
     </div>
 
     <!-- Generate -->
-    <button class="gen-btn" onclick="generate()">
-        <span class="sq"></span>
-        Generate Demo Link
-    </button>
+    <div class="gen-row">
+        <button class="gen-btn" onclick="generate()">
+            <span class="sq"></span>
+            Generate Interactive Link
+        </button>
+        <button class="gen-btn cached-gen" onclick="generateCached()">
+            <span class="sq"></span>
+            Generate Cached Link
+        </button>
+    </div>
 
     <!-- Output -->
     <div class="output" id="output">
@@ -260,6 +305,9 @@
 </div>
 
 <script>
+// LZ-String compression for shorter URLs
+var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length;n++)t[o][o.charAt(n)]=n}return t[o][r]}var r=String.fromCharCode,n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",t={},e={compressToEncodedURIComponent:function(o){return null==o?"":""==o?r(294)+"$":e._compress(o,6,function(o){return n.charAt(o)})},decompressFromEncodedURIComponent:function(n){return null==n?"":""==n?null:(n=n.replace(/ /g,"+"),""==n?null:e._decompress(n.length,32,function(r){return o("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",n.charAt(r))}))},_compress:function(o,n,t){if(null==o)return"";var e,i,s,u={},a={},p="",c="",l="",f=2,d=3,h=2,g=[],v=0,m=0;for(s=0;s<o.length;s+=1)if(p=o.charAt(s),Object.prototype.hasOwnProperty.call(u,p)||(u[p]=d++,a[p]=!0),c=l+p,Object.prototype.hasOwnProperty.call(u,c))l=c;else{if(Object.prototype.hasOwnProperty.call(a,l)){if(l.charCodeAt(0)<256){for(e=0;e<h;e++)v<<=1,m==n-1?(m=0,g.push(t(v)),v=0):m++;for(i=l.charCodeAt(0),e=0;e<8;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1}else{for(i=1,e=0;e<h;e++)v=v<<1|i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i=0;for(i=l.charCodeAt(0),e=0;e<16;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1}0==--f&&(f=Math.pow(2,h),h++),delete a[l]}else for(i=u[l],e=0;e<h;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1;0==--f&&(f=Math.pow(2,h),h++),u[c]=d++,l=String(p)}if(""!==l){if(Object.prototype.hasOwnProperty.call(a,l)){if(l.charCodeAt(0)<256){for(e=0;e<h;e++)v<<=1,m==n-1?(m=0,g.push(t(v)),v=0):m++;for(i=l.charCodeAt(0),e=0;e<8;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1}else{for(i=1,e=0;e<h;e++)v=v<<1|i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i=0;for(i=l.charCodeAt(0),e=0;e<16;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1}0==--f&&(f=Math.pow(2,h),h++),delete a[l]}else for(i=u[l],e=0;e<h;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1;0==--f&&(f=Math.pow(2,h),h++)}for(i=2,e=0;e<h;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1;for(;;){if(v<<=1,m==n-1){g.push(t(v));break}m++}return g.join("")},_decompress:function(o,n,t){var e,i,s,u,a,p,c,l=[],f=4,d=4,h=3,g="",v=[],m={val:t(0),position:n,index:1};for(e=0;e<3;e+=1)l[e]=e;for(s=0,a=Math.pow(2,2),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;switch(s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 2:return""}for(l[3]=c,i=c,v.push(c);;){if(m.index>o)return"";for(s=0,a=Math.pow(2,h),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;switch(c=s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;l[d++]=r(s),c=d-1,f--;break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;l[d++]=r(s),c=d-1,f--;break;case 2:return v.join("")}if(0==f&&(f=Math.pow(2,h),h++),l[c])g=l[c];else{if(c!==d)return null;g=i+i.charAt(0)}v.push(g),l[d++]=i+g.charAt(0),i=g,0==--f&&(f=Math.pow(2,h),h++)}}};return e}();
+
 let generatedUrl = '';
 
 function addQuery() {
@@ -270,14 +318,24 @@ function addQuery() {
     item.innerHTML = `
         <div style="display:flex;gap:8px;align-items:center;width:100%">
             <input type="text" class="q-title" placeholder="Title — e.g. Company Pricing" style="flex:1;font-weight:600">
-            <select>
+            <select class="q-depth">
                 <option value="standard">Standard</option>
                 <option value="fast">Fast</option>
                 <option value="deep">Deep</option>
             </select>
+            <select class="q-output">
+                <option value="sourcedAnswer">sourcedAnswer</option>
+                <option value="searchResults">searchResults</option>
+                <option value="structured">structured</option>
+            </select>
             <button class="remove-btn" onclick="removeQuery(this)">&times;</button>
         </div>
         <textarea class="q-body" placeholder="Query — e.g. Find the pricing page for {company}" style="min-height:48px;font-size:13px"></textarea>
+        <div style="display:flex;gap:8px;align-items:center">
+            <button class="cache-btn" onclick="runAndCache(this)">&#9654; Run &amp; Cache</button>
+            <span class="cache-status"></span>
+        </div>
+        <div class="cache-preview" style="display:none"></div>
     `;
     list.appendChild(item);
 }
@@ -307,8 +365,9 @@ function getConfig() {
     document.querySelectorAll('.query-item').forEach(item => {
         const title = (item.querySelector('.q-title')||{}).value?.trim()||'';
         const q = (item.querySelector('.q-body')||item.querySelector('input:not(.q-title)')||{}).value?.trim()||'';
-        const d = item.querySelector('select').value;
-        if (q) queries.push({ title, q, depth: d });
+        const d = (item.querySelector('.q-depth')||item.querySelector('select')).value;
+        const ot = item.querySelector('.q-output')?.value || 'sourcedAnswer';
+        if (q) queries.push({ title, q, depth: d, outputType: ot });
     });
 
     return {
@@ -325,9 +384,124 @@ function generate() {
     const config = getConfig();
     if (!config.name) { alert('Enter a company name'); return; }
 
-    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(config))));
+    const encoded = LZString.compressToEncodedURIComponent(JSON.stringify(config));
     const base = window.location.origin;
-    generatedUrl = `${base}/index.html?c=${encoded}`;
+    generatedUrl = `${base}/index.html?lz=${encoded}`;
+
+    document.getElementById('linkUrl').textContent = generatedUrl;
+    document.getElementById('output').classList.add('vis');
+    document.getElementById('previewFrame').classList.remove('vis');
+}
+
+async function runAndCache(btn) {
+    const ak = document.getElementById('adminApiKey').value.trim();
+    if (!ak) { alert('Enter your API key at the top first'); return; }
+
+    const item = btn.closest('.query-item');
+    const q = item.querySelector('.q-body').value.trim();
+    if (!q) { alert('Enter a query first'); return; }
+
+    const depth = (item.querySelector('.q-depth')||item.querySelector('select')).value;
+    const outputType = item.querySelector('.q-output')?.value || 'sourcedAnswer';
+    const status = item.querySelector('.cache-status');
+    const preview = item.querySelector('.cache-preview');
+
+    btn.disabled = true;
+    const origText = btn.innerHTML;
+    btn.innerHTML = 'Running\u2026';
+    status.textContent = '';
+    status.style.color = '';
+
+    const payload = { q, depth, outputType };
+    const t0 = Date.now();
+
+    try {
+        const r = await fetch('https://api.linkup.so/v1/search', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${ak}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
+
+        if (!r.ok) {
+            const e = await r.json().catch(() => ({}));
+            throw new Error(e.message || e.detail || `HTTP ${r.status}`);
+        }
+
+        const data = await r.json();
+
+        // Store on the DOM element
+        item._cachedResponse = data;
+        item._cachedElapsed = elapsed;
+        item._cachedOutputType = outputType;
+
+        btn.innerHTML = '\u2713 Cached';
+        btn.classList.add('cached');
+        status.textContent = elapsed + 's';
+        status.style.color = '#059669';
+
+        // Show preview
+        let previewText = '';
+        if (outputType === 'sourcedAnswer') {
+            const ans = data.answer || data.output || '';
+            previewText = ans.slice(0, 400) + (ans.length > 400 ? '\u2026' : '');
+        } else if (outputType === 'searchResults') {
+            const rs = data.results || [];
+            previewText = rs.length + ' results:\n' + rs.slice(0, 3).map((r,i) => (i+1)+'. '+r.name).join('\n');
+        } else {
+            previewText = JSON.stringify(data.output || data, null, 2).slice(0, 400);
+        }
+        preview.textContent = previewText;
+        preview.style.display = 'block';
+    } catch (e) {
+        status.textContent = 'Error: ' + e.message;
+        status.style.color = '#DC2626';
+        btn.innerHTML = '&#9654; Run &amp; Cache';
+        btn.classList.remove('cached');
+        preview.style.display = 'none';
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+function generateCached() {
+    const config = getConfig();
+    if (!config.name) { alert('Enter a company name'); return; }
+
+    const items = document.querySelectorAll('.query-item');
+    const queries = [];
+    let uncached = 0;
+
+    items.forEach(item => {
+        const title = (item.querySelector('.q-title')||{}).value?.trim()||'';
+        const q = (item.querySelector('.q-body')||{}).value?.trim()||'';
+        const depth = (item.querySelector('.q-depth')||item.querySelector('select')).value;
+        const outputType = item.querySelector('.q-output')?.value || 'sourcedAnswer';
+        if (!q) return;
+
+        const query = { title, q, depth, outputType };
+        if (item._cachedResponse) {
+            query.response = item._cachedResponse;
+            query.elapsed = item._cachedElapsed;
+        } else {
+            uncached++;
+        }
+        queries.push(query);
+    });
+
+    if (!queries.length) { alert('Add at least one query'); return; }
+    if (uncached > 0 && !confirm(uncached + ' query(ies) not cached yet. Generate anyway?')) return;
+
+    const cached = {
+        name: config.name,
+        logo: config.logo,
+        cached: true,
+        queries
+    };
+
+    const encoded = LZString.compressToEncodedURIComponent(JSON.stringify(cached));
+    const base = window.location.origin;
+    generatedUrl = `${base}/index.html?lz=${encoded}`;
 
     document.getElementById('linkUrl').textContent = generatedUrl;
     document.getElementById('output').classList.add('vis');
@@ -404,7 +578,7 @@ function loadConfig(i) {
         const item = document.createElement('div');
         item.className = 'query-item';
         item.style.cssText = 'flex-direction:column;gap:6px';
-        item.innerHTML = `<div style="display:flex;gap:8px;align-items:center;width:100%"><input type="text" class="q-title" value="${esc(q.title||'')}" placeholder="Title" style="flex:1;font-weight:600"><select><option value="standard" ${q.depth==='standard'?'selected':''}>Standard</option><option value="fast" ${q.depth==='fast'?'selected':''}>Fast</option><option value="deep" ${q.depth==='deep'?'selected':''}>Deep</option></select><button class="remove-btn" onclick="removeQuery(this)">&times;</button></div><textarea class="q-body" style="min-height:48px;font-size:13px">${esc(q.q)}</textarea>`;
+        item.innerHTML = `<div style="display:flex;gap:8px;align-items:center;width:100%"><input type="text" class="q-title" value="${esc(q.title||'')}" placeholder="Title" style="flex:1;font-weight:600"><select class="q-depth"><option value="standard" ${q.depth==='standard'?'selected':''}>Standard</option><option value="fast" ${q.depth==='fast'?'selected':''}>Fast</option><option value="deep" ${q.depth==='deep'?'selected':''}>Deep</option></select><select class="q-output"><option value="sourcedAnswer" ${(q.outputType||'sourcedAnswer')==='sourcedAnswer'?'selected':''}>sourcedAnswer</option><option value="searchResults" ${q.outputType==='searchResults'?'selected':''}>searchResults</option><option value="structured" ${q.outputType==='structured'?'selected':''}>structured</option></select><button class="remove-btn" onclick="removeQuery(this)">&times;</button></div><textarea class="q-body" style="min-height:48px;font-size:13px">${esc(q.q)}</textarea><div style="display:flex;gap:8px;align-items:center"><button class="cache-btn" onclick="runAndCache(this)">&#9654; Run &amp; Cache</button><span class="cache-status"></span></div><div class="cache-preview" style="display:none"></div>`;
         list.appendChild(item);
     });
     if (!list.children.length) addQuery();

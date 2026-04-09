@@ -222,6 +222,26 @@
         /* Fetch content */
         .fc{max-height:none;overflow:visible}
 
+        /* ═══ CACHED MODE ═══ */
+        .cached-q-list{display:flex;flex-direction:column;gap:6px}
+        .cached-q-btn{
+            font-family:var(--f);font-size:13px;padding:12px 14px;
+            border:1px solid var(--brd);border-radius:var(--r2);background:var(--bg);
+            color:var(--t1);cursor:pointer;transition:all .12s;text-align:left;
+            line-height:1.4;display:flex;align-items:center;gap:10px;
+        }
+        .cached-q-btn:hover{border-color:var(--acc);background:#F0F5FF}
+        .cached-q-btn.active{border-color:var(--acc);background:var(--acc-bg);box-shadow:0 0 0 3px rgba(0,82,204,.06)}
+        .cached-q-btn .cq-arrow{color:var(--t4);font-size:14px;flex-shrink:0;transition:color .12s}
+        .cached-q-btn.active .cq-arrow{color:var(--acc)}
+        .cached-q-btn .cq-text{flex:1;min-width:0;overflow:hidden}
+        .cached-q-btn .cq-title{display:block;font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .cached-q-btn .cq-desc{display:block;font-size:11px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+        .cached-q-btn .cq-badge{font-family:var(--m);font-size:9px;padding:2px 6px;border-radius:3px;background:var(--bg3);color:var(--t3);flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}
+        .cached-heading{font-family:var(--m);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+        .cached-heading .ch-dot{width:6px;height:6px;background:var(--ok);border-radius:50%}
+        .cached-note{font-size:12px;color:var(--t3);margin-top:20px;padding:12px;background:var(--bg3);border-radius:var(--r);line-height:1.5}
+
         /* ═══ RESPONSIVE ═══ */
         @media(max-width:900px){
             .split{grid-template-columns:1fr;grid-template-rows:auto 1fr}
@@ -414,6 +434,9 @@
 </div>
 
 <script>
+// LZ-String compression for shorter URLs
+var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length;n++)t[o][o.charAt(n)]=n}return t[o][r]}var r=String.fromCharCode,n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",t={},e={compressToEncodedURIComponent:function(o){return null==o?"":""==o?r(294)+"$":e._compress(o,6,function(o){return n.charAt(o)})},decompressFromEncodedURIComponent:function(n){return null==n?"":""==n?null:(n=n.replace(/ /g,"+"),""==n?null:e._decompress(n.length,32,function(r){return o("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",n.charAt(r))}))},_compress:function(o,n,t){if(null==o)return"";var e,i,s,u={},a={},p="",c="",l="",f=2,d=3,h=2,g=[],v=0,m=0;for(s=0;s<o.length;s+=1)if(p=o.charAt(s),Object.prototype.hasOwnProperty.call(u,p)||(u[p]=d++,a[p]=!0),c=l+p,Object.prototype.hasOwnProperty.call(u,c))l=c;else{if(Object.prototype.hasOwnProperty.call(a,l)){if(l.charCodeAt(0)<256){for(e=0;e<h;e++)v<<=1,m==n-1?(m=0,g.push(t(v)),v=0):m++;for(i=l.charCodeAt(0),e=0;e<8;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1}else{for(i=1,e=0;e<h;e++)v=v<<1|i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i=0;for(i=l.charCodeAt(0),e=0;e<16;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1}0==--f&&(f=Math.pow(2,h),h++),delete a[l]}else for(i=u[l],e=0;e<h;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1;0==--f&&(f=Math.pow(2,h),h++),u[c]=d++,l=String(p)}if(""!==l){if(Object.prototype.hasOwnProperty.call(a,l)){if(l.charCodeAt(0)<256){for(e=0;e<h;e++)v<<=1,m==n-1?(m=0,g.push(t(v)),v=0):m++;for(i=l.charCodeAt(0),e=0;e<8;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1}else{for(i=1,e=0;e<h;e++)v=v<<1|i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i=0;for(i=l.charCodeAt(0),e=0;e<16;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1}0==--f&&(f=Math.pow(2,h),h++),delete a[l]}else for(i=u[l],e=0;e<h;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1;0==--f&&(f=Math.pow(2,h),h++)}for(i=2,e=0;e<h;e++)v=v<<1|1&i,m==n-1?(m=0,g.push(t(v)),v=0):m++,i>>=1;for(;;){if(v<<=1,m==n-1){g.push(t(v));break}m++}return g.join("")},_decompress:function(o,n,t){var e,i,s,u,a,p,c,l=[],f=4,d=4,h=3,g="",v=[],m={val:t(0),position:n,index:1};for(e=0;e<3;e+=1)l[e]=e;for(s=0,a=Math.pow(2,2),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;switch(s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 2:return""}for(l[3]=c,i=c,v.push(c);;){if(m.index>o)return"";for(s=0,a=Math.pow(2,h),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;switch(c=s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;l[d++]=r(s),c=d-1,f--;break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=m.val&m.position,m.position>>=1,0==m.position&&(m.position=n,m.val=t(m.index++)),s|=(u>0?1:0)*p,p<<=1;l[d++]=r(s),c=d-1,f--;break;case 2:return v.join("")}if(0==f&&(f=Math.pow(2,h),h++),l[c])g=l[c];else{if(c!==d)return null;g=i+i.charAt(0)}v.push(g),l[d++]=i+g.charAt(0),i=g,0==--f&&(f=Math.pow(2,h),h++)}}};return e}();
+
 let cDepth='standard',cOut='searchResults';
 
 // API KEY
@@ -628,10 +651,97 @@ function rFR(data,el,url){
 // ═══ CONFIG FROM URL ═══
 function loadConfig(){
     const params=new URLSearchParams(window.location.search);
+    const lz=params.get('lz');
     const c=params.get('c');
-    if(!c)return;
+    if(!lz&&!c)return;
     try{
-        const cfg=JSON.parse(decodeURIComponent(escape(atob(c))));
+        const cfg=lz?JSON.parse(LZString.decompressFromEncodedURIComponent(lz)):JSON.parse(decodeURIComponent(escape(atob(c))));
+
+        // ═══ CACHED MODE ═══
+        if(cfg.cached){
+            // Branding
+            if(cfg.logo){
+                const navL=document.querySelector('.nav-l');
+                const sep2=document.createElement('div');sep2.className='nav-sep';
+                const img=document.createElement('img');
+                img.src=cfg.logo;img.alt=cfg.name||'Logo';
+                img.style.cssText='height:24px;width:auto;max-width:120px;object-fit:contain';
+                navL.appendChild(sep2);navL.appendChild(img);
+            }
+            if(cfg.name){
+                document.querySelector('.nav-t').textContent=cfg.name+' \u00D7 Linkup';
+                document.title=cfg.name+' \u2014 Linkup Demo';
+            }
+            // Add cached badge
+            const navL=document.querySelector('.nav-l');
+            const badge=document.createElement('span');
+            badge.className='nav-tag';
+            badge.style.cssText='background:#ECFDF5;color:#059669;border-color:#A7F3D0';
+            badge.textContent='CACHED';
+            navL.appendChild(badge);
+
+            // Hide API key & mode bar
+            document.querySelector('.nav-r').style.display='none';
+            document.querySelector('.mode-bar').style.display='none';
+
+            // Replace left panel with query selector
+            const left=document.querySelector('.left');
+            left.innerHTML='';
+
+            const heading=document.createElement('div');
+            heading.className='cached-heading';
+            heading.innerHTML='<span class="ch-dot"></span> Pre-built queries for '+(cfg.name||'you');
+            left.appendChild(heading);
+
+            const list=document.createElement('div');
+            list.className='cached-q-list';
+
+            window._cachedQueries=cfg.queries||[];
+
+            window._cachedQueries.forEach((q,i)=>{
+                const btn=document.createElement('button');
+                btn.className='cached-q-btn';
+                btn.dataset.idx=i;
+                btn.innerHTML=`<span class="cq-arrow">\u2192</span><span class="cq-text">${q.title?`<span class="cq-title">${esc(q.title)}</span><span class="cq-desc">${esc(q.q)}</span>`:`<span class="cq-title">${esc(q.q)}</span>`}</span><span class="cq-badge">${esc(q.depth||'standard')}</span>`;
+                btn.onclick=()=>showCachedResult(i);
+                list.appendChild(btn);
+            });
+
+            left.appendChild(list);
+
+            const note=document.createElement('div');
+            note.className='cached-note';
+            note.textContent='These results were pre-generated. Click a query to view its results.';
+            left.appendChild(note);
+
+            // Helper
+            function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+            window.showCachedResult=function(i){
+                const q=window._cachedQueries[i];
+                if(!q||!q.response)return;
+
+                // Highlight
+                list.querySelectorAll('.cached-q-btn').forEach((el,j)=>el.classList.toggle('active',j===i));
+
+                // Hide placeholder & searching anim
+                document.getElementById('ph').classList.add('hidden');
+                document.getElementById('searchingAnim').classList.remove('vis');
+                document.getElementById('fRes').classList.remove('vis');
+
+                // Render using existing function
+                const pl={depth:q.depth,outputType:q.outputType||'sourcedAnswer'};
+                rSR(q.response,q.elapsed||'0.00',pl);
+                document.getElementById('sRes').classList.add('vis');
+            };
+
+            // Auto-show first cached result
+            if(window._cachedQueries.length&&window._cachedQueries[0].response){
+                setTimeout(()=>showCachedResult(0),100);
+            }
+
+            return; // skip normal config loading
+        }
 
         // Customer logo — add alongside Linkup logo
         if(cfg.logo){
