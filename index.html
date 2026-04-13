@@ -651,7 +651,9 @@ function rFR(data,el,url){
 // ═══ CONFIG FROM URL ═══
 function loadConfig(){
     const params=new URLSearchParams(window.location.search);
-    const lz=params.get('lz');
+    const hash=window.location.hash.slice(1);// remove #
+    const hashParams=new URLSearchParams(hash);
+    const lz=params.get('lz')||hashParams.get('lz');
     const c=params.get('c');
     if(!lz&&!c)return;
     try{

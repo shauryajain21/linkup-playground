@@ -148,7 +148,29 @@
         .cache-btn:disabled{opacity:.5;cursor:not-allowed}
         .cache-btn.cached{background:var(--ok);color:#fff;border-color:var(--ok)}
         .cache-status{font-family:var(--m);font-size:11px;color:var(--t3)}
-        .cache-preview{margin-top:6px;background:#0D0D0D;border:1px solid #2A2A2A;border-radius:8px;padding:12px 14px;max-height:180px;overflow-y:auto;font-family:var(--m);font-size:11px;color:#999;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+        .cache-preview{margin-top:8px;background:#0D0D0D;border:1px solid #2A2A2A;border-radius:10px;overflow:hidden}
+        .cache-preview .cp-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #2A2A2A;background:#111}
+        .cache-preview .cp-meta{font-family:var(--m);font-size:10px;color:#6EE7B7;display:flex;align-items:center;gap:6px}
+        .cache-preview .cp-meta .dot{width:5px;height:5px;border-radius:50%;background:#4ADE80}
+        .cache-preview .cp-toggle{font-family:var(--m);font-size:10px;color:#555;background:none;border:1px solid #333;padding:3px 8px;border-radius:4px;cursor:pointer;transition:all .1s}
+        .cache-preview .cp-toggle:hover{color:#999;border-color:#555}
+        .cache-preview .cp-body{padding:16px;max-height:400px;overflow-y:auto;font-family:var(--m);font-size:12px;color:#D1D5DB;line-height:1.7}
+        .cache-preview .cp-body::-webkit-scrollbar{width:4px}
+        .cache-preview .cp-body::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+        .cache-preview .cp-body h1,.cache-preview .cp-body h2,.cache-preview .cp-body h3{color:#7DD3FC;margin:12px 0 6px;font-size:14px}
+        .cache-preview .cp-body p{margin-bottom:8px;color:#D1D5DB}
+        .cache-preview .cp-body strong{color:#FCD34D}
+        .cache-preview .cp-body a{color:#7DD3FC}
+        .cache-preview .cp-body ul,.cache-preview .cp-body ol{margin:4px 0 8px 16px}
+        .cache-preview .cp-body li{margin-bottom:4px;color:#D1D5DB}
+        .cache-preview .cp-body li::marker{color:#6EE7B7}
+        .cache-preview .cp-src{padding:8px 12px;border-left:2px solid #3B82F6;margin-bottom:6px;border-radius:0 6px 6px 0}
+        .cache-preview .cp-src:hover{background:#1A1A1A}
+        .cache-preview .cp-src-name{font-size:12px;font-weight:600;color:#93C5FD}
+        .cache-preview .cp-src-url{font-size:9px;color:#555;word-break:break-all}
+        .cache-preview .cp-src-snippet{font-size:11px;color:#888;margin-top:4px;line-height:1.5}
+        .cache-preview .cp-sources{margin-top:12px;padding-top:10px;border-top:1px solid #2A2A2A}
+        .cache-preview .cp-sources-hd{font-size:10px;color:#6EE7B7;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
         .q-output{
             font-family:var(--f);font-size:12px;padding:10px 8px;
             border:1px solid var(--brd);border-radius:8px;background:var(--bg);
@@ -388,9 +410,65 @@ function generate() {
     const base = window.location.origin;
     generatedUrl = `${base}/index.html?lz=${encoded}`;
 
-    document.getElementById('linkUrl').textContent = generatedUrl;
+    const urlEl = document.getElementById('linkUrl');
+    urlEl.textContent = generatedUrl;
+    urlEl.dataset.full = generatedUrl;
     document.getElementById('output').classList.add('vis');
     document.getElementById('previewFrame').classList.remove('vis');
+}
+
+function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function mdBasic(t){
+    if(!t)return'';
+    let s=t.replace(/\r\n/g,'\n');
+    s=s.replace(/```(\w*)\n([\s\S]*?)```/g,(_,l,c)=>`<pre style="background:#1E2127;padding:10px 12px;border-radius:6px;overflow-x:auto;font-size:11px;border:1px solid #2C313A;margin:6px 0">${escH(c.trim())}</pre>`);
+    const blocks=s.split(/\n\n+/);let out='';
+    for(let b of blocks){
+        b=b.trim();if(!b||b.startsWith('<pre')){{out+=b;continue;}}
+        const hm=b.match(/^(#{1,3})\s+(.+)/);
+        if(hm){out+=`<h${hm[1].length}>${inlB(hm[2])}</h${hm[1].length}>`;continue;}
+        const lines=b.split('\n');
+        const isList=lines.every(l=>/^\s*[-*•]\s|^\s*\d+\.\s|^\s*$/.test(l));
+        if(isList){out+='<ul>';for(const l of lines){const m=l.match(/^\s*[-*•\d.]+\s+(.*)/);if(m)out+=`<li>${inlB(m[1])}</li>`;}out+='</ul>';continue;}
+        out+=`<p>${inlB(b.replace(/\n/g,'<br>'))}</p>`;
+    }
+    return out;
+}
+function inlB(s){return s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`]+)`/g,'<code style="background:#1E2127;padding:1px 4px;border-radius:3px;font-size:11px;color:#FCA5A5">$1</code>').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" style="color:#7DD3FC">$1</a>');}
+
+function renderCachePreview(data, outputType, elapsed) {
+    let html = '<div class="cp-header"><span class="cp-meta"><span class="dot"></span> cached \u00B7 ' + elapsed + 's \u00B7 ' + escH(outputType) + '</span><button class="cp-toggle" onclick="const b=this.closest(\'.cache-preview\').querySelector(\'.cp-body\');b.style.display=b.style.display===\'none\'?\'block\':\'none\';this.textContent=b.style.display===\'none\'?\'expand\':\'collapse\'">collapse</button></div>';
+    html += '<div class="cp-body">';
+
+    if (outputType === 'sourcedAnswer') {
+        const ans = data.answer || data.output || '';
+        html += '<div>' + mdBasic(ans) + '</div>';
+        const srcs = data.sources || data.results || [];
+        if (srcs.length) {
+            html += '<div class="cp-sources"><div class="cp-sources-hd">Sources (' + srcs.length + ')</div>';
+            srcs.slice(0, 8).forEach(s => {
+                const u = s.url || '';
+                const n = s.name || u;
+                html += '<div class="cp-src"><div class="cp-src-name">' + escH(n) + '</div><div class="cp-src-url">' + escH(u) + '</div></div>';
+            });
+            if (srcs.length > 8) html += '<div style="font-size:10px;color:#555;padding:4px 0">+' + (srcs.length-8) + ' more</div>';
+            html += '</div>';
+        }
+    } else if (outputType === 'searchResults') {
+        const rs = data.results || [];
+        html += '<div style="font-size:10px;color:#6EE7B7;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">' + rs.length + ' results</div>';
+        rs.forEach(r => {
+            const snippet = (r.content || '').slice(0, 150);
+            html += '<div class="cp-src"><div class="cp-src-name">' + escH(r.name || 'Untitled') + '</div><div class="cp-src-url">' + escH(r.url || '') + '</div>' + (snippet ? '<div class="cp-src-snippet">' + escH(snippet) + '\u2026</div>' : '') + '</div>';
+        });
+    } else {
+        const out = data.output || data.structured || data;
+        const js = typeof out === 'string' ? out : JSON.stringify(out, null, 2);
+        html += '<pre style="background:#111;color:#D4D4D4;padding:14px;border-radius:6px;overflow:auto;max-height:300px;font-size:11px;border:1px solid #2A2A2A;white-space:pre-wrap">' + escH(js) + '</pre>';
+    }
+
+    html += '</div>';
+    return html;
 }
 
 async function runAndCache(btn) {
@@ -440,18 +518,8 @@ async function runAndCache(btn) {
         status.textContent = elapsed + 's';
         status.style.color = '#059669';
 
-        // Show preview
-        let previewText = '';
-        if (outputType === 'sourcedAnswer') {
-            const ans = data.answer || data.output || '';
-            previewText = ans.slice(0, 400) + (ans.length > 400 ? '\u2026' : '');
-        } else if (outputType === 'searchResults') {
-            const rs = data.results || [];
-            previewText = rs.length + ' results:\n' + rs.slice(0, 3).map((r,i) => (i+1)+'. '+r.name).join('\n');
-        } else {
-            previewText = JSON.stringify(data.output || data, null, 2).slice(0, 400);
-        }
-        preview.textContent = previewText;
+        // Show rich preview
+        preview.innerHTML = renderCachePreview(data, outputType, elapsed);
         preview.style.display = 'block';
     } catch (e) {
         status.textContent = 'Error: ' + e.message;
@@ -501,15 +569,18 @@ function generateCached() {
 
     const encoded = LZString.compressToEncodedURIComponent(JSON.stringify(cached));
     const base = window.location.origin;
-    generatedUrl = `${base}/index.html?lz=${encoded}`;
+    generatedUrl = `${base}/index.html#lz=${encoded}`;
 
-    document.getElementById('linkUrl').textContent = generatedUrl;
+    const urlEl = document.getElementById('linkUrl');
+    urlEl.textContent = generatedUrl.length > 200 ? generatedUrl.slice(0, 200) + '\u2026 (' + Math.round(generatedUrl.length/1024) + 'KB)' : generatedUrl;
+    urlEl.dataset.full = generatedUrl;
     document.getElementById('output').classList.add('vis');
     document.getElementById('previewFrame').classList.remove('vis');
 }
 
 function copyLink() {
-    navigator.clipboard.writeText(generatedUrl).then(() => {
+    const url = document.getElementById('linkUrl').dataset.full || generatedUrl;
+    navigator.clipboard.writeText(url).then(() => {
         const el = document.getElementById('linkUrl');
         const orig = el.textContent;
         el.textContent = 'Copied!';
@@ -518,7 +589,8 @@ function copyLink() {
 }
 
 function openLink() {
-    if (generatedUrl) window.open(generatedUrl, '_blank');
+    const url = document.getElementById('linkUrl').dataset.full || generatedUrl;
+    if (url) window.open(url, '_blank');
 }
 
 function togglePreview() {
