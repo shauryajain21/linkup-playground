@@ -242,6 +242,12 @@
         .cached-heading .ch-dot{width:6px;height:6px;background:var(--ok);border-radius:50%}
         .cached-note{font-size:12px;color:var(--t3);margin-top:20px;padding:12px;background:var(--bg3);border-radius:var(--r);line-height:1.5}
 
+        /* Cached mode: vertically center content so empty space is balanced */
+        body.cached .left{display:flex;flex-direction:column;justify-content:safe center}
+        body.cached .right{display:flex;flex-direction:column;justify-content:safe center}
+        body.cached .res.vis{flex-shrink:0;width:100%}
+        body.cached .cached-note{display:none}
+
         /* ═══ RESPONSIVE ═══ */
         @media(max-width:900px){
             .split{grid-template-columns:1fr;grid-template-rows:auto 1fr}
@@ -588,7 +594,7 @@ async function doSearch(){
 function rSR(data,el,pl){
     const rEl=document.getElementById('sRes'),cost=pl.depth==='deep'?'$0.05':pl.depth==='fast'?'$0.001':'$0.005';
     const raw=JSON.stringify(data,null,2);
-    let o=`<div style="padding:24px"><div class="rc"><div class="meta"><div class="mi"><span class="dot"></span> <b>${el}s</b></div><div class="mi">depth <b>${pl.depth}</b></div><div class="mi">output <b>${pl.outputType}</b></div><div class="mi">~<b>${cost}</b></div></div><div class="rb">`;
+    let o=`<div class="rc"><div class="meta"><div class="mi"><span class="dot"></span> <b>${el}s</b></div><div class="mi">depth <b>${pl.depth}</b></div><div class="mi">output <b>${pl.outputType}</b></div><div class="mi">~<b>${cost}</b></div></div><div class="rb">`;
 
     if(pl.outputType==='searchResults'){
         const rs=data.results||[];
@@ -611,7 +617,7 @@ function rSR(data,el,pl){
         o+=`<div class="jw"><pre>${hJ(js)}</pre><button class="cpb" onclick="cp(document.getElementById('sj').textContent,this)">copy</button><pre id="sj" style="display:none">${h(js)}</pre></div>`;
     }
 
-    o+=`</div><div class="rf"><button class="rawb" onclick="const p=this.closest('.rc').querySelector('.rawp');p.classList.toggle('open');this.classList.toggle('open');this.textContent=p.classList.contains('open')?'hide raw':'show raw'">show raw</button></div><div class="rawp"><div class="jw"><pre>${hJ(raw)}</pre><button class="cpb" onclick="cp(this.closest('.jw').querySelector('pre').textContent,this)">copy</button></div></div></div></div>`;
+    o+=`</div><div class="rf"><button class="rawb" onclick="const p=this.closest('.rc').querySelector('.rawp');p.classList.toggle('open');this.classList.toggle('open');this.textContent=p.classList.contains('open')?'hide raw':'show raw'">show raw</button></div><div class="rawp"><div class="jw"><pre>${hJ(raw)}</pre><button class="cpb" onclick="cp(this.closest('.jw').querySelector('pre').textContent,this)">copy</button></div></div></div>`;
     rEl.innerHTML=o;rEl.classList.add('vis');
 }
 
@@ -644,7 +650,7 @@ async function doFetch(){
 function rFR(data,el,url){
     const rEl=document.getElementById('fRes'),c=data.content||data.markdown||data.text||JSON.stringify(data,null,2);
     let hn;try{hn=new URL(url).hostname;}catch(e){hn=url;}
-    rEl.innerHTML=`<div style="padding:24px"><div class="rc"><div class="meta"><div class="mi"><span class="dot"></span> <b>${el}s</b></div><div class="mi">url <b>${h(hn)}</b></div></div><div class="rb"><div class="ans fc">${md(c)}</div></div><div class="rf"><button class="rawb" onclick="const p=this.closest('.rc').querySelector('.rawp');p.classList.toggle('open');this.classList.toggle('open');this.textContent=p.classList.contains('open')?'hide raw':'show raw'">show raw</button></div><div class="rawp"><div class="jw"><pre>${h(c)}</pre><button class="cpb" onclick="cp(this.closest('.jw').querySelector('pre').textContent,this)">copy</button></div></div></div></div>`;
+    rEl.innerHTML=`<div class="rc"><div class="meta"><div class="mi"><span class="dot"></span> <b>${el}s</b></div><div class="mi">url <b>${h(hn)}</b></div></div><div class="rb"><div class="ans fc">${md(c)}</div></div><div class="rf"><button class="rawb" onclick="const p=this.closest('.rc').querySelector('.rawp');p.classList.toggle('open');this.classList.toggle('open');this.textContent=p.classList.contains('open')?'hide raw':'show raw'">show raw</button></div><div class="rawp"><div class="jw"><pre>${h(c)}</pre><button class="cpb" onclick="cp(this.closest('.jw').querySelector('pre').textContent,this)">copy</button></div></div></div>`;
     rEl.classList.add('vis');
 }
 
@@ -661,6 +667,7 @@ function loadConfig(){
 
         // ═══ CACHED MODE ═══
         if(cfg.cached){
+            document.body.classList.add('cached');
             // Branding
             if(cfg.logo){
                 const navL=document.querySelector('.nav-l');
