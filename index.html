@@ -228,15 +228,15 @@
             font-family:var(--f);font-size:13px;padding:12px 14px;
             border:1px solid var(--brd);border-radius:var(--r2);background:var(--bg);
             color:var(--t1);cursor:pointer;transition:all .12s;text-align:left;
-            line-height:1.4;display:flex;align-items:center;gap:10px;
+            line-height:1.4;display:flex;align-items:flex-start;gap:10px;
         }
         .cached-q-btn:hover{border-color:var(--acc);background:#F0F5FF}
         .cached-q-btn.active{border-color:var(--acc);background:var(--acc-bg);box-shadow:0 0 0 3px rgba(0,82,204,.06)}
         .cached-q-btn .cq-arrow{color:var(--t4);font-size:14px;flex-shrink:0;transition:color .12s}
         .cached-q-btn.active .cq-arrow{color:var(--acc)}
-        .cached-q-btn .cq-text{flex:1;min-width:0;overflow:hidden}
-        .cached-q-btn .cq-title{display:block;font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .cached-q-btn .cq-desc{display:block;font-size:11px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+        .cached-q-btn .cq-text{flex:1;min-width:0}
+        .cached-q-btn .cq-title{display:block;font-weight:600;font-size:13px}
+        .cached-q-btn .cq-desc{display:block;font-size:11px;color:var(--t3);margin-top:2px;line-height:1.5;white-space:normal;word-break:break-word}
         .cached-q-btn .cq-badge{font-family:var(--m);font-size:9px;padding:2px 6px;border-radius:3px;background:var(--bg3);color:var(--t3);flex-shrink:0;text-transform:uppercase;letter-spacing:.3px}
         .cached-q-btn .cq-copy{font-family:var(--m);font-size:10px;padding:4px 8px;border-radius:4px;background:transparent;color:var(--t3);border:1px solid var(--brd);cursor:pointer;flex-shrink:0;transition:all .12s;display:inline-flex;align-items:center;gap:4px}
         .cached-q-btn .cq-copy:hover{color:var(--acc);border-color:var(--acc);background:#F0F5FF}
