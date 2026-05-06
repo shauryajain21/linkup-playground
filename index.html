@@ -242,10 +242,26 @@
         .cached-heading .ch-dot{width:6px;height:6px;background:var(--ok);border-radius:50%}
         .cached-note{font-size:12px;color:var(--t3);margin-top:20px;padding:12px;background:var(--bg3);border-radius:var(--r);line-height:1.5}
 
-        /* Cached mode: vertically center content so empty space is balanced */
-        body.cached .left{display:flex;flex-direction:column;justify-content:center}
-        body.cached .right{display:flex;flex-direction:column;justify-content:center}
-        body.cached .res.vis{flex-shrink:0;width:100%}
+        /* Cached mode: stacked, centered box layout (queries on top, answer below) */
+        body.cached{background:var(--bg3)}
+        body.cached .split{
+            display:flex;flex-direction:column;align-items:center;
+            overflow-y:auto;padding:32px 24px;gap:16px;grid-template-columns:none;
+        }
+        body.cached .left{
+            width:100%;max-width:900px;flex:0 0 auto;
+            background:var(--bg);border:1px solid var(--brd);border-radius:var(--r3);
+            padding:20px 24px;overflow:visible;height:auto;
+        }
+        body.cached .right{
+            width:100%;max-width:900px;flex:0 0 auto;
+            background:#0D0D0D;border:1px solid #2A2A2A;border-radius:var(--r3);
+            overflow:hidden;height:auto;min-height:120px;
+        }
+        body.cached .placeholder,body.cached .searching{display:none !important}
+        body.cached .res{padding:0}
+        body.cached .res.vis .rc{border:none;border-radius:0;background:transparent}
+        body.cached .cached-heading{margin-bottom:12px}
         body.cached .cached-note{display:none}
 
         /* ═══ RESPONSIVE ═══ */
