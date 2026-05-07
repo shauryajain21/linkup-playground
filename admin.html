@@ -232,10 +232,6 @@
                 <span>Preview</span>
             </div>
         </div>
-        <div class="fg">
-            <label class="fl">API Key <span class="fh">(pre-filled for the customer)</span></label>
-            <input type="text" id="apiKey" placeholder="lk-...">
-        </div>
     </div>
 
     <!-- Queries -->
@@ -395,7 +391,6 @@ function getConfig() {
     return {
         name: document.getElementById('companyName').value.trim(),
         logo: document.getElementById('logoUrl').value.trim(),
-        key: document.getElementById('apiKey').value.trim(),
         queries,
         output: document.getElementById('defaultOutput').value,
         depth: document.getElementById('defaultDepth').value,
@@ -639,7 +634,6 @@ function loadConfig(i) {
     const c = saved[i]; if (!c) return;
     document.getElementById('companyName').value = c.name || '';
     document.getElementById('logoUrl').value = c.logo || '';
-    document.getElementById('apiKey').value = c.key || '';
     document.getElementById('defaultOutput').value = c.output || 'sourcedAnswer';
     document.getElementById('defaultDepth').value = c.depth || 'standard';
     previewLogo();

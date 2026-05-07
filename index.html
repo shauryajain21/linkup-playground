@@ -820,12 +820,6 @@ function loadConfig(){
             document.title=cfg.name+' — Linkup Demo';
         }
 
-        // Pre-fill API key
-        if(cfg.key){
-            kI.value=cfg.key;
-            kH.textContent='ready';
-        }
-
         // Default depth
         if(cfg.depth)sD(cfg.depth);
 
