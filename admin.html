@@ -208,15 +208,6 @@
     <h1>Create a demo link</h1>
     <p class="sub">Configure a branded playground for your customer with pre-built queries.</p>
 
-    <!-- Admin API Key -->
-    <div class="card" style="border-color:var(--acc);border-style:dashed">
-        <div class="card-title" style="color:var(--acc)">Your API Key (for running queries)</div>
-        <div class="fg">
-            <input type="text" id="adminApiKey" placeholder="lk-..." style="font-family:var(--m)">
-            <span style="font-size:11px;color:var(--t3);margin-top:4px;display:block">Used to run &amp; cache queries. NOT shared in the demo link.</span>
-        </div>
-    </div>
-
     <!-- Customer Info -->
     <div class="card">
         <div class="card-title">Customer</div>
@@ -467,9 +458,6 @@ function renderCachePreview(data, outputType, elapsed) {
 }
 
 async function runAndCache(btn) {
-    const ak = document.getElementById('adminApiKey').value.trim();
-    if (!ak) { alert('Enter your API key at the top first'); return; }
-
     const item = btn.closest('.query-item');
     const q = item.querySelector('.q-body').value.trim();
     if (!q) { alert('Enter a query first'); return; }
@@ -489,9 +477,9 @@ async function runAndCache(btn) {
     const t0 = Date.now();
 
     try {
-        const r = await fetch('https://api.linkup.so/v1/search', {
+        const r = await fetch('/api/search', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${ak}`, 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
         const elapsed = ((Date.now() - t0) / 1000).toFixed(2);
