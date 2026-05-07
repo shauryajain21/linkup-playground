@@ -308,9 +308,8 @@
         <span class="nav-t">Labs</span>
         <span class="nav-tag">Demo</span>
     </div>
-    <div class="nav-r">
-        <span class="nav-kl">API Key</span>
-        <input type="password" class="nav-ki" id="apiKeyInput" placeholder="lk-..." autocomplete="off" spellcheck="false">
+    <div class="nav-r" style="display:none">
+        <input type="password" class="nav-ki" id="apiKeyInput" autocomplete="off" spellcheck="false">
         <span class="nav-ks" id="apiKeyHint"></span>
     </div>
 </nav>
@@ -583,7 +582,6 @@ function cp(t,b){navigator.clipboard.writeText(t).then(()=>{const o=b.textConten
 
 // SEARCH
 async function doSearch(){
-    const ak=gK();if(!ak){alert('Enter your Linkup API key');kI.focus();return;}
     const q=document.getElementById('sQ').value.trim();if(!q){alert('Enter a search query');return;}
     const btn=document.getElementById('sBtn'),rEl=document.getElementById('sRes');
     const pl={q,depth:cDepth,outputType:cOut};
@@ -605,7 +603,7 @@ async function doSearch(){
     const animTm=mkT(document.getElementById('animTimer'));
 
     try{
-        const r=await fetch('https://api.linkup.so/v1/search',{method:'POST',headers:{'Authorization':`Bearer ${ak}`,'Content-Type':'application/json'},body:JSON.stringify(pl)});
+        const r=await fetch('/api/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});
         const el=((Date.now()-t0)/1000).toFixed(2);clearInterval(tm);clearInterval(animTm);
         sa.classList.remove('vis');
         if(!r.ok){const e=await r.json().catch(()=>({}));const msg=e.message||(e.error&&e.error.message)||(typeof e.error==='string'?e.error:null)||e.detail||`HTTP ${r.status}: ${r.statusText}`;throw new Error(msg);}
@@ -648,7 +646,6 @@ function tS(i,b){const el=document.getElementById('s'+i);if(b.textContent==='sho
 
 // FETCH
 async function doFetch(){
-    const ak=gK();if(!ak){alert('Enter your Linkup API key');kI.focus();return;}
     const url=document.getElementById('fUrl').value.trim();if(!url){alert('Enter a URL');return;}
     const rj=document.getElementById('rJs').checked,btn=document.getElementById('fBtn'),rEl=document.getElementById('fRes');
     let hn;try{hn=new URL(url).hostname;}catch(e){hn=url;}
@@ -661,7 +658,7 @@ async function doFetch(){
     const tm=mkT(document.getElementById('fT')),t0=Date.now();
     const animTm=mkT(document.getElementById('animTimer'));
     try{
-        const r=await fetch('https://api.linkup.so/v1/fetch',{method:'POST',headers:{'Authorization':`Bearer ${ak}`,'Content-Type':'application/json'},body:JSON.stringify({url,renderJs:rj})});
+        const r=await fetch('/api/fetch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,renderJs:rj})});
         const el=((Date.now()-t0)/1000).toFixed(2);clearInterval(tm);clearInterval(animTm);
         sa.classList.remove('vis');
         if(!r.ok){const e=await r.json().catch(()=>({}));const msg=e.message||(e.error&&e.error.message)||(typeof e.error==='string'?e.error:null)||e.detail||`HTTP ${r.status}: ${r.statusText}`;throw new Error(msg);}
